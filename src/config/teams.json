@@ -1,0 +1,23 @@
+[
+  { "id": "blue-rovers", "name": "Blue Rovers", "short": "BLR",
+    "kit": { "pattern": "plain", "shirt1": "#5a6fd6", "shirt2": "#ffffff", "shorts": "#f2f2f2", "socks": "#5a6fd6" },
+    "keeper": { "pattern": "plain", "shirt1": "#2bb04a", "shirt2": "#2bb04a", "shorts": "#222222", "socks": "#2bb04a" } },
+  { "id": "red-city", "name": "Red City", "short": "RDC",
+    "kit": { "pattern": "plain", "shirt1": "#d0181f", "shirt2": "#ffffff", "shorts": "#ffffff", "socks": "#d0181f" },
+    "keeper": { "pattern": "plain", "shirt1": "#f07a1a", "shirt2": "#f07a1a", "shorts": "#555555", "socks": "#f07a1a" } },
+  { "id": "magpies", "name": "Northern Magpies", "short": "NMP",
+    "kit": { "pattern": "stripes", "shirt1": "#111111", "shirt2": "#f5f5f5", "shorts": "#111111", "socks": "#111111", "patternCount": 6 },
+    "keeper": { "pattern": "plain", "shirt1": "#e8d21c", "shirt2": "#e8d21c", "shorts": "#e8d21c", "socks": "#e8d21c" } },
+  { "id": "green-hoops", "name": "Green Hoops", "short": "GRH",
+    "kit": { "pattern": "hoops", "shirt1": "#118a3e", "shirt2": "#ffffff", "shorts": "#ffffff", "socks": "#ffffff", "patternCount": 6 },
+    "keeper": { "pattern": "plain", "shirt1": "#8a2be2", "shirt2": "#8a2be2", "shorts": "#222222", "socks": "#8a2be2" } },
+  { "id": "harbour-halves", "name": "Harbour Halves", "short": "HBH",
+    "kit": { "pattern": "halves", "shirt1": "#1c3f94", "shirt2": "#f2f2f2", "shorts": "#1c3f94", "socks": "#1c3f94" },
+    "keeper": { "pattern": "plain", "shirt1": "#ff5fa2", "shirt2": "#ff5fa2", "shorts": "#222222", "socks": "#ff5fa2" } },
+  { "id": "sash-athletic", "name": "Sash Athletic", "short": "SSA",
+    "kit": { "pattern": "sash", "shirt1": "#f5f5f5", "shirt2": "#c8102e", "shorts": "#111111", "socks": "#f5f5f5" },
+    "keeper": { "pattern": "plain", "shirt1": "#1b1b1b", "shirt2": "#1b1b1b", "shorts": "#1b1b1b", "socks": "#1b1b1b" } },
+  { "id": "amber-wanderers", "name": "Amber Wanderers", "short": "AMW",
+    "kit": { "pattern": "stripes", "shirt1": "#f2a900", "shirt2": "#111111", "shorts": "#111111", "socks": "#f2a900", "patternCount": 8 },
+    "keeper": { "pattern": "plain", "shirt1": "#3aa0e8", "shirt2": "#3aa0e8", "shorts": "#3aa0e8", "socks": "#3aa0e8" } }
+]

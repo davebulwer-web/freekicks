@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "characters": {
+    "people": {
+      "sheets": {
+        "main": {
+          "base": "sprites/people_base.png",
+          "mask": "sprites/people_mask.png",
+          "uv": "sprites/people_uv.png",
+          "frameW": 128,
+          "frameH": 256,
+          "columns": 17,
+          "rows": 8
+        },
+        "dive": {
+          "base": "sprites/dive_base.png",
+          "mask": "sprites/dive_mask.png",
+          "uv": "sprites/dive_uv.png",
+          "frameW": 320,
+          "frameH": 256,
+          "columns": 6,
+          "rows": 8
+        }
+      },
+      "anims": {
+        "idle": {
+          "sheet": "main",
+          "start": 0,
+          "count": 2,
+          "fps": 1.5,
+          "loop": true
+        },
+        "run": {
+          "sheet": "main",
+          "start": 2,
+          "count": 6,
+          "fps": 12,
+          "loop": true
+        },
+        "kick": {
+          "sheet": "main",
+          "start": 8,
+          "count": 4,
+          "fps": 12,
+          "loop": false
+        },
+        "jump": {
+          "sheet": "main",
+          "start": 12,
+          "count": 2,
+          "fps": 5,
+          "loop": false
+        },
+        "celebrate": {
+          "sheet": "main",
+          "start": 14,
+          "count": 2,
+          "fps": 4,
+          "loop": true
+        },
+        "hold": {
+          "sheet": "main",
+          "start": 16,
+          "count": 1,
+          "fps": 1,
+          "loop": false
+        },
+        "dive_left": {
+          "sheet": "dive",
+          "start": 0,
+          "count": 3,
+          "fps": 6,
+          "loop": false
+        },
+        "dive_right": {
+          "sheet": "dive",
+          "start": 3,
+          "count": 3,
+          "fps": 6,
+          "loop": false
+        }
+      },
+      "pixelsPerMetre": 110,
+      "footY": 14,
+      "directions": 8
+    },
+    "cameraman": {
+      "sheets": {
+        "main": {
+          "base": "sprites/cameraman_base.png",
+          "mask": "sprites/cameraman_mask.png",
+          "uv": "sprites/cameraman_uv.png",
+          "frameW": 128,
+          "frameH": 256,
+          "columns": 2,
+          "rows": 8
+        }
+      },
+      "anims": {
+        "idle": {
+          "sheet": "main",
+          "start": 0,
+          "count": 2,
+          "fps": 0.5,
+          "loop": true
+        }
+      },
+      "pixelsPerMetre": 110,
+      "footY": 14,
+      "directions": 8
+    }
+  },
+  "crowd": {
+    "atlas": "sprites/crowd.png",
+    "frameW": 48,
+    "frameH": 64,
+    "variants": 16,
+    "frames": 2,
+    "worldHeight": 1
+  },
+  "textures": {
+    "grass": "textures/grass.png",
+    "net": "textures/net.png",
+    "ball": "textures/ball.png",
+    "shadow": "textures/shadow.png",
+    "stand": "textures/stand.png",
+    "dugout": "textures/dugout.png",
+    "sky": "textures/sky.png",
+    "surround": "textures/surround.png"
+  },
+  "hoardings": [
+    "hoardings/hoarding_01.png",
+    "hoardings/hoarding_02.png",
+    "hoardings/hoarding_03.png",
+    "hoardings/hoarding_04.png",
+    "hoardings/hoarding_05.png",
+    "hoardings/hoarding_06.png"
+  ],
+  "models": {},
+  "audio": {
+    "kick": "",
+    "whistle": "",
+    "post": "",
+    "net": "",
+    "bounce": "",
+    "cheer": "",
+    "groan": "",
+    "crowd": ""
+  }
+}

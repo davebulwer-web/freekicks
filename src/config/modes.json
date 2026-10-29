@@ -1,0 +1,24 @@
+[
+  {
+    "id": "arcade",
+    "name": "Arcade",
+    "description": "Three lives. Every goal takes you to a harder free kick and refills your lives.",
+    "lives": 3,
+    "windMin": 0,
+    "windMax": 2,
+    "windRampPerStage": 0.25,
+    "weather": { "clear": 1 },
+    "scoreMultiplier": 1
+  },
+  {
+    "id": "weather",
+    "name": "Weather Challenge",
+    "description": "Gales, rain and snow. Slippery balls, skidding bounces and fumbling keepers.",
+    "lives": 3,
+    "windMin": 2,
+    "windMax": 7,
+    "windRampPerStage": 0.2,
+    "weather": { "clear": 1, "rain": 2, "snow": 1.5 },
+    "scoreMultiplier": 1.25
+  }
+]
