@@ -26,7 +26,7 @@ async function main() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
   page.on('pageerror', (e) => console.error('page error:', e));
-  await page.goto(url);
+  await page.goto(url, { timeout: 180000 });
   await page.waitForFunction(() => window.__assets, null, { timeout: 120000 });
   const assets = await page.evaluate(() => window.__assets);
   let written = 0, skipped = 0;
