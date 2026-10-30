@@ -3,19 +3,19 @@ import type { Match } from '../sim/Match';
 import type { AnimName } from '../sim/Person';
 
 const ANIMS: AnimName[] = ['idle', 'run', 'kick', 'jump', 'dive_left', 'dive_right', 'celebrate', 'hold', 'down'];
-const STRIDE = 6;
+const STRIDE = 8;
 
 interface Frame {
   t: number;
   ball: Float32Array; // x y z qx qy qz qw
-  people: Float32Array; // per person: x z jumpY heading anim animTime
+  people: Float32Array; // per person: x z jumpY heading anim animTime frame(-1 = time-based) reachY
   excitement: number;
 }
 
 export interface ReplayState {
   ballPos: Vector3;
   ballRot: Quaternion;
-  people: { pos: Vector3; jumpY: number; heading: number; anim: string; animTime: number }[];
+  people: { pos: Vector3; jumpY: number; heading: number; anim: string; animTime: number; frame?: number; reachY?: number }[];
   netHits: { pos: Vector3; strength: number; t: number }[];
   /** Crowd excitement at this moment of the replay. */
   excitement: number;
@@ -33,7 +33,7 @@ export class Recorder {
     const ball = new Float32Array([m.ball.pos.x, m.ball.pos.y, m.ball.pos.z, m.ball.rot.x, m.ball.rot.y, m.ball.rot.z, m.ball.rot.w]);
     const people = new Float32Array(m.people.length * STRIDE);
     m.people.forEach((p, i) => {
-      people.set([p.pos.x, p.pos.z, p.jumpY, p.heading, ANIMS.indexOf(p.anim), p.animTime], i * STRIDE);
+      people.set([p.pos.x, p.pos.z, p.jumpY, p.heading, ANIMS.indexOf(p.anim), p.animTime, p.frame ?? -1, p.reachY], i * STRIDE);
     });
     this.frames.push({ t: m.time, ball, people, excitement });
     if (m.netImpact && m.netImpact !== this.lastNet) {
@@ -77,6 +77,8 @@ export class Recorder {
       p.heading = a.people[o + 3];
       p.anim = ANIMS[a.people[o + 4]] ?? 'idle';
       p.animTime = a.people[o + 5] + (t - a.t);
+      p.frame = a.people[o + 6] >= 0 ? a.people[o + 6] : undefined;
+      p.reachY = lerp(a.people[o + 7], b.people[o + 7], k);
     }
     return s;
   }

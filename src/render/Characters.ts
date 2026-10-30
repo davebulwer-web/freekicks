@@ -2,7 +2,7 @@ import { Group, Mesh, MeshBasicMaterial, PlaneGeometry, ShaderMaterial, Vector3,
 import type { AssetManager } from '../assets/AssetManager';
 import type { CharacterSet } from '../assets/manifest';
 import type { Kit } from '../config/types';
-import { wrapAngle } from '../core/math';
+import { clamp, wrapAngle } from '../core/math';
 import { applyKit, createKitMaterial } from './KitMaterial';
 
 const plane = new PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -14,6 +14,10 @@ export interface CharacterPose {
   heading: number;
   anim: string;
   animTime: number;
+  /** Explicit frame chosen by the sim (keeper dives); otherwise frames follow animTime. */
+  frame?: number;
+  /** Real hand height (m); dive frames are lifted so the drawn hands sit at this height. */
+  reachY?: number;
 }
 
 /**
@@ -68,14 +72,17 @@ export class CharacterSprite {
       this.mesh.scale.set(sheet.frameW / this.set.pixelsPerMetre, sheet.frameH / this.set.pixelsPerMetre, 1);
     }
     const ppm = this.set.pixelsPerMetre;
+    const n = Math.floor(p.animTime * def.fps);
+    const f = p.frame !== undefined ? Math.min(Math.max(0, p.frame), def.count - 1) : def.loop ? n % def.count : Math.min(n, def.count - 1);
+    // Match the drawn hands to the physics hands (e.g. a dive to the top corner vs a low save).
+    const drawnHands = def.handsY?.[f];
+    const lift = drawnHands != null && p.reachY !== undefined && p.frame !== undefined ? clamp(p.reachY - drawnHands, -0.5, 1) : 0;
     this.group.position.set(p.pos.x, 0, p.pos.z);
-    this.mesh.position.y = p.jumpY - this.set.footY / ppm;
+    this.mesh.position.y = p.jumpY + lift - this.set.footY / ppm;
     const toCam = Math.atan2(camPos.x - p.pos.x, camPos.z - p.pos.z);
     this.mesh.rotation.y = toCam;
     const step = (Math.PI * 2) / this.set.directions;
     const row = ((Math.round(wrapAngle(p.heading - toCam) / step) % this.set.directions) + this.set.directions) % this.set.directions;
-    const n = Math.floor(p.animTime * def.fps);
-    const f = def.loop ? n % def.count : Math.min(n, def.count - 1);
     const col = def.start + f;
     const W = sheet.frameW * sheet.columns;
     const H = sheet.frameH * sheet.rows;

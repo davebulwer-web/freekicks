@@ -20,6 +20,10 @@ export class Person {
   heading = 0;
   anim: AnimName = 'idle';
   animTime = 0;
+  /** Explicit frame within the current anim (set by the sim for keeper dives); undefined = time-based. */
+  frame?: number;
+  /** Current hand height in metres (keeper dives), used to draw the sprite at the real reach. */
+  reachY = 0;
   /** Vertical offset from jumping. */
   jumpY = 0;
   jumpVy = 0;

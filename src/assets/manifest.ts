@@ -11,6 +11,11 @@ export interface AnimDef {
   count: number;
   fps: number;
   loop: boolean;
+  /**
+   * Height (m above the ground line) of the hands as drawn in each frame, or null. Frames with a
+   * value are lifted so the drawn hands meet the keeper's real reach (dive height varies per save).
+   */
+  handsY?: (number | null)[];
 }
 
 export interface SheetDef {
@@ -62,8 +67,8 @@ export const DEFAULT_MANIFEST: Manifest = {
         jump: { sheet: 'main', start: 12, count: 2, fps: 5, loop: false },
         celebrate: { sheet: 'main', start: 14, count: 2, fps: 4, loop: true },
         hold: { sheet: 'main', start: 16, count: 1, fps: 1, loop: false },
-        dive_left: { sheet: 'dive', start: 0, count: 3, fps: 6, loop: false },
-        dive_right: { sheet: 'dive', start: 3, count: 3, fps: 6, loop: false },
+        dive_left: { sheet: 'dive', start: 0, count: 3, fps: 6, loop: false, handsY: [null, 1.52, null] },
+        dive_right: { sheet: 'dive', start: 3, count: 3, fps: 6, loop: false, handsY: [null, 1.52, null] },
       },
       pixelsPerMetre: 110,
       footY: 14,

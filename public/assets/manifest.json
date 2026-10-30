@@ -70,14 +70,24 @@
           "start": 0,
           "count": 3,
           "fps": 6,
-          "loop": false
+          "loop": false,
+          "handsY": [
+            null,
+            1.52,
+            null
+          ]
         },
         "dive_right": {
           "sheet": "dive",
           "start": 3,
           "count": 3,
           "fps": 6,
-          "loop": false
+          "loop": false,
+          "handsY": [
+            null,
+            1.52,
+            null
+          ]
         }
       },
       "pixelsPerMetre": 110,

@@ -39,6 +39,13 @@ type TouchKind = 'none' | 'wall' | 'defender' | 'attacker' | 'keeper' | 'post' |
 
 export const SIM_DT = 1 / 120;
 
+/** Seconds for a diving keeper to drop from full stretch to lying on the ground. */
+const KEEPER_FALL_TIME = 0.12;
+/** Hands below this height mean the keeper is (visually and physically) on the ground. */
+const KEEPER_LOW = 0.65;
+/** Body capsule radius while lying on the ground. */
+const KEEPER_LYING_RADIUS = 0.22;
+
 const tmpA = new Vector3();
 const tmpB = new Vector3();
 const tmpC = new Vector3();
@@ -184,6 +191,7 @@ export class Match {
     if (this.phase === 'live') {
       this.updateBall(dt);
       this.updateKeeper(dt);
+      this.syncKeeperPose(this.keeper);
       this.updateOutfield(dt);
       if (!this.outcome && this.time - this.kickTime > RULES.playTimeout) {
         this.setOutcome('timeout', 'NO GOAL');
@@ -379,7 +387,8 @@ export class Match {
     if (mode === 'dive' || mode === 'down') {
       const dir = k.ai.diveDir as number;
       const prog = mode === 'dive' ? (k.ai.diveProg as number) : 1;
-      const handsY = mode === 'down' ? lerp(k.ai.handsY as number, 0.3, clamp((k.ai.downT as number) / 0.35, 0, 1)) : lerp(1.2, k.ai.handsY as number, prog);
+      // Once the dive is over he falls to the ground quickly (same moment the sprite shows him lying).
+      const handsY = mode === 'down' ? lerp(k.ai.handsY as number, 0.3, clamp((k.ai.downT as number) / KEEPER_FALL_TIME, 0, 1)) : lerp(1.2, k.ai.handsY as number, prog);
       return out.set(k.pos.x + dir * (0.35 + 0.95 * prog), handsY + k.jumpY, k.pos.z + 0.15);
     }
     if (mode === 'reach' && k.ai.hx !== undefined) {
@@ -469,6 +478,23 @@ export class Match {
     }
   }
 
+  /**
+   * The sim, not the clock, picks the dive frame so the sprite always matches the collision body:
+   * launch, full stretch while airborne, lying once his hands are on the ground.
+   */
+  private syncKeeperPose(k: Person) {
+    const mode = k.ai.mode as string;
+    if (mode !== 'dive' && mode !== 'down') {
+      k.frame = undefined;
+      return;
+    }
+    const handsY = this.keeperHands(k, tmpC).y;
+    const lowDive = (k.ai.handsY as number) < KEEPER_LOW;
+    k.reachY = handsY;
+    if (mode === 'dive') k.frame = (k.ai.diveProg as number) < 0.25 ? 0 : lowDive ? 2 : 1;
+    else k.frame = handsY < KEEPER_LOW ? 2 : 1;
+  }
+
   private advanceDive(k: Person, dt: number) {
     const prog = Math.min(1, (k.ai.diveProg as number) + dt / (k.ai.diveDur as number));
     k.ai.diveProg = prog;
@@ -530,14 +556,16 @@ export class Match {
     if (ball.pos.z < -0.3) return;
     const hands = this.keeperHands(k, tmpB);
     const mode = k.ai.mode as string;
+    const lying = mode === 'down' && hands.y < KEEPER_LOW;
+    const bodyR = lying ? KEEPER_LYING_RADIUS : k.radius;
     let bodyA: Vector3;
-    if (mode === 'dive' || mode === 'down') bodyA = tmpA.set(k.pos.x - (k.ai.diveDir as number) * 0.35, 0.3, k.pos.z);
+    if (mode === 'dive' || mode === 'down') bodyA = tmpA.set(k.pos.x - (k.ai.diveDir as number) * 0.35, lying ? 0.25 : 0.3, k.pos.z);
     else bodyA = tmpA.set(k.pos.x, 0.15 + k.jumpY, k.pos.z);
     const bodyB = mode === 'dive' || mode === 'down' ? hands : tmpC.set(k.pos.x, 1.75 + k.jumpY, k.pos.z);
     const cp = closestPointOnSegment(ball.pos, bodyA, bodyB, new Vector3());
     const dBody = cp.distanceTo(ball.pos);
     const dHands = hands.distanceTo(ball.pos);
-    const hit = dBody < k.radius + BALL_RADIUS || dHands < 0.24 + BALL_RADIUS;
+    const hit = dBody < bodyR + BALL_RADIUS || dHands < 0.24 + BALL_RADIUS;
     if (!hit) return;
 
     const skill = this.setup.keeperSkill;
@@ -564,7 +592,7 @@ export class Match {
     ball.vel.y += this.rng.range(0, 2.5);
     ball.vel.z += this.rng.range(1.5, 4);
     ball.spin.multiplyScalar(0.2);
-    ball.pos.copy(dBody < dHands ? cp : hands).addScaledVector(tmpN, (dBody < dHands ? k.radius : 0.24) + BALL_RADIUS + 0.01);
+    ball.pos.copy(dBody < dHands ? cp : hands).addScaledVector(tmpN, (dBody < dHands ? bodyR : 0.24) + BALL_RADIUS + 0.01);
     k.touchCooldown = 0.45;
     this.lastTouch = 'keeper';
     this.ballState = 'loose';
