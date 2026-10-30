@@ -1,0 +1,458 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Hoardings Sheet</title>
+<!--
+  Source for the advertising hoarding texture sheet. Rendered by render.cjs.
+  Every board is a 1024 x 128 SVG; boards are stacked with a 10 px separator.
+-->
+<style>
+  @font-face { font-family: 'Luckiest Guy'; src: url(fonts/LuckiestGuy-Regular.woff2) format('woff2'); }
+  @font-face { font-family: 'Lilita One'; src: url(fonts/LilitaOne-Regular.woff2) format('woff2'); }
+  html, body { margin: 0; padding: 0; background: #101010; }
+  #sheet { width: 1024px; background: #101010; }
+  #sheet svg { display: block; }
+  .sep { height: 10px; background: #101010; }
+</style>
+</head>
+<body>
+<div id="sheet"></div>
+<script>
+const W = 1024, H = 128, SEP = 10;
+const INK = '#16161f';
+let uid = 0;
+
+// ---------- primitives ----------
+const poly = (n, r, rot = -90, cx = 0, cy = 0) =>
+  Array.from({ length: n }, (_, i) => {
+    const a = (rot + (360 / n) * i) * Math.PI / 180;
+    return `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
+  }).join(' ');
+
+function ball(x, y, r, rot = 0) {
+  const id = 'bc' + uid++;
+  const sw = Math.max(2.5, r * 0.12);
+  let patches = '';
+  for (let i = 0; i < 5; i++) {
+    const a = (-90 + i * 72) * Math.PI / 180;
+    const px = Math.cos(a) * r * 1.0, py = Math.sin(a) * r * 1.0;
+    patches += `<polygon points="${poly(5, r * 0.36, -90 + i * 72 + 180, px, py)}" fill="${INK}"/>`;
+    const ix = Math.cos(a) * r * 0.36, iy = Math.sin(a) * r * 0.36;
+    patches += `<line x1="${ix}" y1="${iy}" x2="${px * 0.72}" y2="${py * 0.72}" stroke="${INK}" stroke-width="${sw * 0.6}"/>`;
+  }
+  return `<g transform="translate(${x},${y}) rotate(${rot})">
+    <clipPath id="${id}"><circle r="${r}"/></clipPath>
+    <circle r="${r}" fill="#fff"/>
+    <g clip-path="url(#${id})">${patches}<polygon points="${poly(5, r * 0.36)}" fill="${INK}"/></g>
+    <path d="M${-r * 0.62},${-r * 0.3} A${r * 0.7},${r * 0.7} 0 0 1 ${-r * 0.2},${-r * 0.66}" fill="none" stroke="#fff" stroke-width="${r * 0.12}" stroke-linecap="round" opacity=".9"/>
+    <circle r="${r}" fill="none" stroke="${INK}" stroke-width="${sw}"/>
+  </g>`;
+}
+
+function speedLines(x, y, len, n, gap, color = '#fff', sw = 5, op = 0.85) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const l = len * (i % 2 ? 0.65 : 1);
+    const yy = y + (i - (n - 1) / 2) * gap;
+    s += `<line x1="${x}" y1="${yy}" x2="${x + l}" y2="${yy}" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" opacity="${op}"/>`;
+  }
+  return s;
+}
+
+function sparkle(x, y, r, fill = '#fff', stroke = INK) {
+  const k = r * 0.28;
+  return `<path d="M${x},${y - r} Q${x + k},${y - k} ${x + r},${y} Q${x + k},${y + k} ${x},${y + r} Q${x - k},${y + k} ${x - r},${y} Q${x - k},${y - k} ${x},${y - r}Z"
+    fill="${fill}" stroke="${stroke}" stroke-width="${stroke === 'none' ? 0 : 2.5}" stroke-linejoin="round"/>`;
+}
+
+const star5 = (x, y, r, fill) =>
+  `<polygon points="${Array.from({ length: 10 }, (_, i) => {
+    const a = (-90 + i * 36) * Math.PI / 180, rr = i % 2 ? r * 0.45 : r;
+    return `${(x + rr * Math.cos(a)).toFixed(1)},${(y + rr * Math.sin(a)).toFixed(1)}`;
+  }).join(' ')}" fill="${fill}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>`;
+
+// deterministic pseudo-random so the sheet is reproducible
+function rng(seed) { return () => ((seed = (seed * 16807) % 2147483647) / 2147483647); }
+
+// ---------- illustrations ----------
+function boot(x, y, s, rot, color, stripe, flip = false) {
+  const fx = flip ? -1 : 1;
+  let laces = '';
+  for (let i = 0; i < 4; i++) laces += `<line x1="${54 + i * 8}" y1="${12 + i * 5}" x2="${62 + i * 8}" y2="${22 + i * 4}" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>`;
+  let studs = '';
+  for (const sx of [14, 34, 90, 110, 126]) studs += `<rect x="${sx}" y="68" width="9" height="9" rx="2" fill="#e8e8e8" stroke="${INK}" stroke-width="2.5"/>`;
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${s * fx},${s}) translate(-74,-40)" stroke-linejoin="round">
+    ${studs}
+    <path d="M4,58 L146,58 Q147,72 134,72 L14,72 Q4,72 4,62 Z" fill="${INK}"/>
+    <path d="M6,10 Q6,2 14,2 L44,2 Q52,2 55,10 Q64,30 88,34 L120,38 Q144,42 146,58 L146,60 L4,60 Z" fill="${color}" stroke="${INK}" stroke-width="4"/>
+    <path d="M22,52 Q70,50 112,40 L122,47 Q74,60 22,60 Z" fill="${stripe}" stroke="${INK}" stroke-width="2.5"/>
+    <path d="M10,8 Q28,0 50,6" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>
+    ${laces}
+    <path d="M16,14 Q14,36 20,48" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+  </g>`;
+}
+
+function bottle(x, y, s, rot) {
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${s}) translate(-22,-54)" stroke="${INK}" stroke-width="4" stroke-linejoin="round">
+    <rect x="12" y="10" width="20" height="14" fill="#e6f7ff"/>
+    <rect x="7" y="0" width="30" height="14" rx="4" fill="#ff3d3d"/>
+    <rect x="0" y="22" width="44" height="88" rx="13" fill="#d8f3ff"/>
+    <path d="M2,52 Q22,46 42,52 L42,96 Q42,108 30,108 L14,108 Q2,108 2,96 Z" fill="#35b8f5" stroke="none"/>
+    <rect x="0" y="22" width="44" height="88" rx="13" fill="none"/>
+    <rect x="0" y="58" width="44" height="24" fill="#fff"/>
+    <path d="M22,62 Q29,71 22,78 Q15,71 22,62Z" fill="#1a7fe0" stroke-width="2"/>
+    <line x1="9" y1="30" x2="9" y2="50" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  </g>`;
+}
+
+const drop = (x, y, r, fill = '#bfe9ff') =>
+  `<path d="M${x},${y - r * 1.5} Q${x + r * 1.2},${y - r * 0.1} ${x},${y + r} Q${x - r * 1.2},${y - r * 0.1} ${x},${y - r * 1.5}Z" fill="${fill}" stroke="${INK}" stroke-width="2.5"/>`;
+
+function goalNet(x, y, w, h) {
+  let net = '';
+  for (let i = 1; i < 10; i++) {
+    const xx = x + (w / 10) * i;
+    net += `<path d="M${xx},${y} Q${xx + (i - 5) * 1.5},${y + h / 2} ${xx},${y + h}" stroke="#fff" stroke-width="1.8" fill="none" opacity=".75"/>`;
+  }
+  for (let j = 1; j < 6; j++) {
+    const yy = y + (h / 6) * j;
+    net += `<path d="M${x},${yy} Q${x + w / 2},${yy + 5} ${x + w},${yy}" stroke="#fff" stroke-width="1.8" fill="none" opacity=".75"/>`;
+  }
+  return `<g>
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#0d5fb3" opacity=".55"/>
+    ${net}
+    <path d="M${x},${y + h + 6} L${x},${y} L${x + w},${y} L${x + w},${y + h + 6}" fill="none" stroke="${INK}" stroke-width="13" stroke-linejoin="round"/>
+    <path d="M${x},${y + h + 6} L${x},${y} L${x + w},${y} L${x + w},${y + h + 6}" fill="none" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
+  </g>`;
+}
+
+function pizza(x, y, s, rot) {
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${s})" stroke="${INK}" stroke-linejoin="round">
+    <path d="M-34,-28 Q0,-42 34,-28 L3,42 Q0,46 -3,42 Z" fill="#ffcf3f" stroke-width="4"/>
+    <path d="M-20,2 Q-22,12 -16,12 Q-12,10 -13,2" fill="#ffcf3f" stroke-width="3"/>
+    <path d="M-38,-30 Q0,-48 38,-30 L33,-20 Q0,-34 -33,-20 Z" fill="#d98a3a" stroke-width="4"/>
+    <circle cx="-12" cy="-12" r="7.5" fill="#d62f2f" stroke-width="3"/>
+    <circle cx="12" cy="-8" r="6.5" fill="#d62f2f" stroke-width="3"/>
+    <circle cx="1" cy="14" r="5.5" fill="#d62f2f" stroke-width="3"/>
+    <path d="M-5,-20 l4,3 M18,4 l3,-3 M-6,4 l-2,4" stroke="#3aa64a" stroke-width="3.5" stroke-linecap="round"/>
+  </g>`;
+}
+
+function cat(x, y, s, body, stripe, flip = false) {
+  const f = flip ? -1 : 1;
+  return `<g transform="translate(${x},${y}) scale(${s * f},${s})" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M38,8 Q66,10 58,30 Q50,44 6,40" fill="none" stroke="${INK}" stroke-width="13"/>
+    <path d="M38,8 Q66,10 58,30 Q50,44 6,40" fill="none" stroke="${body}" stroke-width="7"/>
+    <ellipse cx="6" cy="14" rx="50" ry="27" fill="${body}"/>
+    <path d="M-4,-10 Q0,4 -6,14 M14,-12 Q18,2 12,12 M32,-6 Q34,6 28,14" fill="none" stroke="${stripe}" stroke-width="5"/>
+    <path d="M-46,-10 L-48,-36 L-30,-20 Z M-18,-20 L-8,-42 L-2,-16 Z" fill="${body}"/>
+    <path d="M-44,-14 L-45,-28 L-35,-19 Z M-14,-20 L-8,-33 L-5,-18 Z" fill="#ff9fb5" stroke="none"/>
+    <ellipse cx="-26" cy="4" rx="28" ry="24" fill="${body}"/>
+    <path d="M-40,2 Q-35,7 -30,2 M-22,2 Q-17,7 -12,2" fill="none" stroke-width="3"/>
+    <path d="M-28,10 L-24,10 L-26,13 Z" fill="#ff7a9a" stroke-width="2"/>
+    <path d="M-50,10 L-38,12 M-50,16 L-38,15 M-2,10 L-14,12 M-2,16 L-14,15" stroke-width="2"/>
+    <path d="M-40,26 Q-30,30 -16,26" fill="${body}"/>
+  </g>`;
+}
+
+const zzz = (x, y, s, color = '#9fd3ff') =>
+  `<g font-family="Lilita One" fill="${color}" stroke="${INK}" stroke-width="3" paint-order="stroke">
+    <text x="${x}" y="${y}" font-size="${16 * s}">z</text>
+    <text x="${x + 12 * s}" y="${y - 14 * s}" font-size="${22 * s}">z</text>
+    <text x="${x + 28 * s}" y="${y - 32 * s}" font-size="${28 * s}">Z</text></g>`;
+
+function moon(x, y, r) {
+  const id = 'mn' + uid++;
+  return `<g><mask id="${id}"><rect x="${x - r - 4}" y="${y - r - 4}" width="${r * 2 + 8}" height="${r * 2 + 8}" fill="#fff"/><circle cx="${x + r * 0.55}" cy="${y - r * 0.35}" r="${r * 0.95}" fill="#000"/></mask>
+    <circle cx="${x}" cy="${y}" r="${r}" fill="#ffe680" stroke="${INK}" stroke-width="3.5" mask="url(#${id})"/></g>`;
+}
+
+function banana(x, y, s) {
+  return `<g transform="translate(${x},${y}) scale(${s})" stroke="${INK}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M-14,30 L-22,52 M8,34 L14,52" fill="none" stroke-width="5"/>
+    <ellipse cx="-26" cy="54" rx="10" ry="5.5" fill="#e53935"/>
+    <path d="M-30,-6 L-48,-22 M26,0 L44,-14" fill="none" stroke-width="5"/>
+    <circle cx="-48" cy="-22" r="5" fill="#fff"/><circle cx="44" cy="-14" r="5" fill="#fff"/>
+    <path d="M-6,-56 Q38,-40 34,0 Q30,40 -10,46 Q-34,48 -40,30 Q-12,28 -6,0 Q-2,-30 -16,-48 Z" fill="#fff27a"/>
+    <path d="M-16,-48 Q-14,-60 -6,-62 L-2,-55 Q-6,-54 -6,-56 Z" fill="#7a4b26"/>
+    <path d="M-40,30 Q-46,32 -48,28 Q-44,24 -38,27" fill="#7a4b26"/>
+    <path d="M10,-38 Q24,-20 22,6" fill="none" stroke="#ffd21f" stroke-width="5"/>
+    <ellipse cx="0" cy="-8" rx="6" ry="8" fill="#fff" stroke-width="3"/><ellipse cx="18" cy="-8" rx="6" ry="8" fill="#fff" stroke-width="3"/>
+    <circle cx="2" cy="-6" r="3" fill="${INK}" stroke="none"/><circle cx="20" cy="-6" r="3" fill="${INK}" stroke="none"/>
+    <path d="M-2,10 Q9,22 22,10 Z" fill="#c62828" stroke-width="3"/>
+  </g>`;
+}
+
+function roll(x, y, s, rot = 0) {
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${s})" stroke="${INK}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M-28,-6 L-46,-22 M28,-6 L46,-24" fill="none" stroke-width="5"/>
+    <circle cx="-46" cy="-22" r="6" fill="#fff"/><circle cx="46" cy="-24" r="6" fill="#fff"/>
+    <path d="M-12,36 L-14,48 M12,36 L14,48" fill="none" stroke-width="5"/>
+    <ellipse cx="-18" cy="50" rx="10" ry="5" fill="#4de1c1"/><ellipse cx="18" cy="50" rx="10" ry="5" fill="#4de1c1"/>
+    <path d="M-28,-30 L-28,30 Q0,42 28,30 L28,-30 Z" fill="#fff"/>
+    <ellipse cx="0" cy="-30" rx="28" ry="10" fill="#f1ecf8"/>
+    <ellipse cx="0" cy="-30" rx="10" ry="4" fill="#b99ae0" stroke-width="3"/>
+    <path d="M-28,18 Q0,28 28,18" fill="none" stroke="#c9b6ea" stroke-width="3" stroke-dasharray="5 5"/>
+    <ellipse cx="-9" cy="-6" rx="5" ry="7" fill="${INK}" stroke="none"/><ellipse cx="9" cy="-6" rx="5" ry="7" fill="${INK}" stroke="none"/>
+    <circle cx="-7" cy="-9" r="2" fill="#fff" stroke="none"/><circle cx="11" cy="-9" r="2" fill="#fff" stroke="none"/>
+    <path d="M-9,6 Q0,14 9,6" fill="none" stroke-width="3.5"/>
+    <circle cx="-18" cy="4" r="4" fill="#ff9fd0" stroke="none"/><circle cx="18" cy="4" r="4" fill="#ff9fd0" stroke="none"/>
+  </g>`;
+}
+
+function llama(x, y, s) {
+  return `<g transform="translate(${x},${y}) scale(${s})" stroke="${INK}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M-34,80 Q-30,30 -22,0 L14,0 Q20,40 30,80 Z" fill="#fff3e0"/>
+    <path d="M-20,30 Q-8,36 6,30 M-24,50 Q-8,58 12,50" fill="none" stroke="#e8cfa8" stroke-width="4"/>
+    <path d="M-30,-40 L-36,-70 L-20,-48 Z M6,-42 L12,-72 L-6,-48 Z" fill="#fff3e0"/>
+    <path d="M-30,-48 L-32,-62 L-24,-50 Z M4,-50 L8,-64 L0,-52 Z" fill="#ffb3a0" stroke="none"/>
+    <path d="M-34,-36 Q-36,-50 -12,-50 Q12,-50 12,-34 L14,-14 Q34,-14 36,2 Q36,16 20,16 L-24,16 Q-36,16 -36,0 Z" fill="#fff3e0"/>
+    <circle cx="-22" cy="-50" r="9" fill="#fff"/><circle cx="-10" cy="-54" r="10" fill="#fff"/><circle cx="2" cy="-50" r="9" fill="#fff"/>
+    <path d="M-40,-30 L18,-32 L16,-18 Q10,-10 2,-12 L-2,-22 L-10,-22 Q-12,-10 -24,-10 Q-36,-10 -38,-20 Z" fill="${INK}"/>
+    <path d="M-32,-24 L-26,-28 M6,-26 L10,-29" stroke="#fff" stroke-width="3"/>
+    <path d="M22,2 Q30,8 34,2" fill="none" stroke-width="3"/>
+    <path d="M28,-6 L30,-4" stroke-width="4"/>
+  </g>`;
+}
+
+function mask(x, y, s, rot, fill, happy) {
+  const mouth = happy ? 'M-14,10 Q0,26 14,10 Q0,16 -14,10Z' : 'M-14,20 Q0,4 14,20 Q0,14 -14,20Z';
+  const brow = happy ? 'M-18,-16 Q-10,-22 -4,-16 M4,-16 Q10,-22 18,-16' : 'M-18,-20 Q-10,-14 -4,-12 M4,-12 Q10,-14 18,-20';
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${s})" stroke="${INK}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M-28,-26 Q0,-36 28,-26 Q30,10 14,28 Q0,40 -14,28 Q-30,10 -28,-26Z" fill="${fill}"/>
+    <path d="M${brow.slice(1)}" fill="none" stroke-width="3"/>
+    <ellipse cx="-11" cy="-5" rx="7" ry="${happy ? 4 : 6}" fill="${INK}"/><ellipse cx="11" cy="-5" rx="7" ry="${happy ? 4 : 6}" fill="${INK}"/>
+    <path d="${mouth}" fill="${INK}"/>
+  </g>`;
+}
+
+function mountains(x, y, s, cols) {
+  return `<g transform="translate(${x},${y}) scale(${s})" stroke="${INK}" stroke-width="4" stroke-linejoin="round">
+    <path d="M-110,60 L-50,-10 L10,60 Z" fill="${cols[1]}"/>
+    <path d="M-50,-10 L-64,6 L-56,2 L-50,10 L-42,2 L-36,6 Z" fill="#fff" stroke-width="3"/>
+    <path d="M-60,60 L10,-50 L80,60 Z" fill="${cols[0]}"/>
+    <path d="M10,-50 L-8,-22 L0,-26 L10,-16 L20,-26 L28,-22 Z" fill="#fff" stroke-width="3"/>
+    <path d="M10,-50 Q-4,0 -18,60" fill="none" stroke="${cols[2]}" stroke-width="3" opacity=".7"/>
+    <path d="M40,60 L90,0 L140,60 Z" fill="${cols[1]}"/>
+    <path d="M90,0 L78,14 L86,11 L90,18 L96,11 L102,14 Z" fill="#fff" stroke-width="3"/>
+  </g>`;
+}
+
+const cloud = (x, y, s) =>
+  `<g transform="translate(${x},${y}) scale(${s})"><path d="M-30,10 Q-34,-6 -18,-8 Q-14,-22 2,-18 Q14,-28 24,-14 Q38,-14 36,0 Q42,10 30,12 Z" fill="#fff" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/></g>`;
+
+function donut(x, y, s, rot, icing, sprinkleSeed) {
+  const r = rng(sprinkleSeed);
+  const cols = ['#ff3d6e', '#ffd21f', '#4de1c1', '#3a7bff', '#fff', '#a35bff'];
+  let spr = '';
+  for (let i = 0; i < 14; i++) {
+    const a = r() * Math.PI * 2, d = 14 + r() * 14;
+    spr += `<rect x="-4" y="-1.6" width="8" height="3.2" rx="1.6" fill="${cols[i % cols.length]}" transform="translate(${(Math.cos(a) * d).toFixed(1)},${(Math.sin(a) * d).toFixed(1)}) rotate(${(r() * 180).toFixed(0)})" stroke="${INK}" stroke-width="1"/>`;
+  }
+  let wav = '';
+  for (let i = 0; i <= 12; i++) {
+    const a = (i / 12) * Math.PI * 2, rr = i % 2 ? 31 : 27;
+    wav += `${i ? 'L' : 'M'}${(Math.cos(a) * rr).toFixed(1)},${(Math.sin(a) * rr).toFixed(1)} `;
+  }
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${s})" stroke="${INK}" stroke-linejoin="round">
+    <circle r="36" fill="#e9a55a" stroke-width="4"/>
+    <path d="${wav}Z" fill="${icing}" stroke-width="3"/>
+    ${spr}
+    <circle r="10" fill="#c94f86" stroke-width="4"/>
+    <path d="M-20,-14 Q-14,-22 -4,-24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+  </g>`;
+}
+
+function rocket(x, y, s, rot) {
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${s})" stroke="${INK}" stroke-width="4" stroke-linejoin="round">
+    <path d="M-52,0 Q-74,-14 -96,0 Q-74,14 -52,0Z" fill="#ff7a1a"/>
+    <path d="M-52,0 Q-66,-7 -80,0 Q-66,7 -52,0Z" fill="#ffe14d" stroke-width="2.5"/>
+    <path d="M-30,-16 L-54,-34 L-48,-12 Z M-30,16 L-54,34 L-48,12 Z" fill="#ff3d3d"/>
+    <path d="M-52,-14 L24,-16 Q56,-14 70,0 Q56,14 24,16 L-52,14 Z" fill="#f2f4fa"/>
+    <path d="M38,-14 Q58,-12 70,0 Q58,12 38,14 Q44,0 38,-14Z" fill="#ff3d3d"/>
+    <circle cx="10" cy="0" r="9" fill="#5ad1ff" stroke-width="4"/>
+    <path d="M6,-4 Q8,-6 11,-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M-40,8 L28,8" stroke="#c7cde0" stroke-width="3"/>
+    <path d="M-12,4 L-24,22 L-8,10 Z" fill="#ff3d3d" stroke-width="3"/>
+  </g>`;
+}
+
+const flameTrail = (x, y, len, h) =>
+  `<g stroke="${INK}" stroke-width="4" stroke-linejoin="round">
+    <path d="M${x},${y - h} Q${x - len * 0.5},${y - h * 1.1} ${x - len},${y - h * 0.2} Q${x - len * 0.7},${y} ${x - len * 0.95},${y + h * 0.4} Q${x - len * 0.5},${y + h * 1.1} ${x},${y + h} Z" fill="#ff7a1a"/>
+    <path d="M${x},${y - h * 0.6} Q${x - len * 0.4},${y - h * 0.6} ${x - len * 0.65},${y} Q${x - len * 0.4},${y + h * 0.6} ${x},${y + h * 0.6} Z" fill="#ffe14d" stroke-width="3"/>
+  </g>`;
+
+// ---------- boards ----------
+const boards = [
+  {
+    name: 'KICKING BOOTS', tag: 'Makes Mondays More Bearable!',
+    bg: '#2fa84a', fill: '#ffffff', pill: '#ffd21f', pillText: INK,
+    art: () => speedLines(14, 100, 26, 2, 10, '#fff', 4, .6) + boot(105, 60, 1.05, -12, '#ff7a1a', '#fff')
+      + ball(214, 66, 27, 15) + sparkle(30, 26, 9, '#ffd21f')
+      + boot(910, 64, 1.05, 10, '#ffd21f', '#2b59ff', true) + ball(808, 70, 22, -20) + sparkle(1000, 28, 8, '#fff') + sparkle(842, 26, 7, '#ffd21f'),
+  },
+  {
+    name: 'GOAL HYDRATION', tag: 'Because Sweating Counts',
+    bg: '#1a7fe0', fill: '#ffffff', pill: '#ffffff', pillText: '#0d47a1',
+    art: () => drop(36, 40, 7) + drop(200, 32, 6) + drop(214, 90, 8) + drop(26, 96, 6)
+      + bottle(84, 66, 0.92, -14) + bottle(150, 70, 0.78, 12)
+      + goalNet(812, 26, 182, 82) + ball(936, 82, 22, 30),
+  },
+  {
+    name: 'PIZZA HUT-TRICK', tag: 'Three Slices Ahead of the Rest',
+    bg: '#e0262b', fill: '#ffe14d', pill: '#ffffff', pillText: '#c62828',
+    art: () => speedLines(16, 40, 34, 2, 12, '#ffb3b3', 4, .6) + speedLines(16, 92, 34, 2, 12, '#ffb3b3', 4, .6)
+      + pizza(70, 64, 0.95, -100) + pizza(142, 44, 0.75, -70) + pizza(204, 82, 0.7, -115)
+      + speedLines(790, 40, 30, 2, 12, '#ffb3b3', 4, .6) + speedLines(790, 96, 30, 2, 12, '#ffb3b3', 4, .6)
+      + pizza(850, 70, 0.75, -95) + pizza(912, 44, 0.7, -60) + pizza(962, 78, 0.8, -110),
+  },
+  {
+    name: 'CATNAP', tag: 'For People Who Prefer Extra Time',
+    bg: '#2c2f37', fill: '#ffffff', pill: '#ffd166', pillText: INK,
+    art: () => {
+      const r = rng(7); let st = '';
+      for (let i = 0; i < 22; i++) st += `<circle cx="${(r() * 1000 + 12).toFixed(0)}" cy="${(r() * 104 + 12).toFixed(0)}" r="${(1 + r() * 1.8).toFixed(1)}" fill="#fff" opacity="${(0.35 + r() * 0.5).toFixed(2)}"/>`;
+      return st + moon(214, 36, 16) + cat(104, 66, 1.0, '#ff9f43', '#e07a1a') + zzz(146, 62, 0.8)
+        + star5(30, 28, 8, '#ffe680')
+        + cat(910, 66, 1.0, '#b6bfcc', '#8a94a3', true) + zzz(806, 62, 0.8) + star5(998, 26, 8, '#ffe680') + star5(794, 100, 6, '#ffe680');
+    },
+  },
+  {
+    name: 'BANANAGOAL', tag: 'Natural Performance',
+    bg: '#ffd21f', fill: '#2b59ff', pill: INK, pillText: '#ffd21f',
+    art: () => `<circle cx="104" cy="64" r="51" fill="#ff9f1c" stroke="${INK}" stroke-width="4"/>`
+      + banana(100, 62, 0.86) + ball(190, 98, 18, 10) + speedLines(212, 98, 24, 3, 9, INK, 3.5, .7)
+      + `<circle cx="920" cy="64" r="51" fill="#ff9f1c" stroke="${INK}" stroke-width="4"/>`
+      + `<g transform="translate(1840,0) scale(-1,1)">${banana(920, 62, 0.86)}</g>` + ball(830, 98, 18, -10)
+      + sparkle(30, 28, 9, '#fff') + sparkle(1000, 100, 8, '#fff'),
+  },
+  {
+    name: 'CLEAN SHEET', tag: 'Keep Things Tidy',
+    bg: '#7a3fc4', fill: '#ffffff', pill: '#4de1c1', pillText: INK,
+    art: () => {
+      const bub = [[30, 30, 9], [40, 98, 6], [212, 28, 7], [226, 92, 10], [800, 26, 8], [1002, 98, 7]]
+        .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".25" stroke="#fff" stroke-width="2.5"/><circle cx="${x - r * .35}" cy="${y - r * .35}" r="${r * .25}" fill="#fff"/>`).join('');
+      return bub + `<path d="M130,82 Q160,60 186,82 Q206,100 228,78" fill="none" stroke="${INK}" stroke-width="16" stroke-linecap="round"/>
+        <path d="M130,82 Q160,60 186,82 Q206,100 228,78" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+        <path d="M130,82 Q160,60 186,82 Q206,100 228,78" fill="none" stroke="#c9b6ea" stroke-width="2" stroke-dasharray="3 9"/>`
+        + roll(108, 58, 0.95) + sparkle(76, 22, 8, '#ffd21f') + sparkle(170, 30, 7, '#fff')
+        + `<circle cx="916" cy="62" r="40" fill="#4de1c1" stroke="${INK}" stroke-width="4.5"/>
+           <path d="M896,62 L910,78 L938,46" fill="none" stroke="${INK}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+           <path d="M896,62 L910,78 L938,46" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`
+        + ball(840, 82, 22, 0) + sparkle(970, 28, 10, '#ffd21f') + sparkle(964, 100, 7, '#fff') + sparkle(866, 24, 7, '#fff');
+    },
+  },
+  {
+    name: 'DRAMA LLAMA', tag: 'For When Football Gets Serious',
+    bg: '#ff8a1a', fill: '#ffffff', pill: '#ffffff', pillText: '#d84315',
+    art: () => star5(30, 30, 10, '#ffe14d') + star5(214, 26, 8, '#fff') + star5(220, 96, 7, '#ffe14d')
+      + llama(110, 80, 0.8) + ball(182, 96, 17, 0)
+      + mask(860, 62, 0.95, -14, '#ffe14d', true) + mask(930, 66, 0.95, 14, '#7ec8ff', false)
+      + star5(800, 30, 8, '#fff') + star5(1000, 100, 9, '#ffe14d') + star5(996, 28, 7, '#fff'),
+  },
+  {
+    name: 'HIGHER GOALS', tag: 'Reach New Heights',
+    bg: '#17c2d8', fill: '#ffffff', pill: '#0b3d91', pillText: '#ffffff',
+    art: () => cloud(40, 30, 0.8) + cloud(210, 24, 0.6) + cloud(986, 30, 0.7)
+      + mountains(110, 76, 0.85, ['#3f51b5', '#5c6bc0', '#1a237e'])
+      + `<line x1="118.5" y1="34" x2="118.5" y2="14" stroke="${INK}" stroke-width="4"/><path d="M118.5,14 L134,20 L118.5,26 Z" fill="#ff3d3d" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`
+      + ball(212, 82, 18, 0)
+      + mountains(890, 76, 0.85, ['#3f51b5', '#5c6bc0', '#1a237e'])
+      + `<path d="M878,36 L878,18 L919,18 L919,36" fill="none" stroke="${INK}" stroke-width="9" stroke-linejoin="round"/><path d="M878,36 L878,18 L919,18 L919,36" fill="none" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>`
+      + `<path d="M790,104 Q824,24 892,28" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="6 7" stroke-linecap="round"/>`
+      + ball(898, 28, 8, 0),
+  },
+  {
+    name: 'DONUT GIVE UP', tag: 'Sweet Things Happen on the Pitch',
+    bg: '#ff6fae', fill: '#ffffff', pill: '#6b3e26', pillText: '#ffffff',
+    art: () => {
+      const r = rng(42); const cols = ['#ffd21f', '#4de1c1', '#3a7bff', '#fff', '#a35bff', '#ff3d6e'];
+      let spr = '';
+      for (let i = 0; i < 70; i++) {
+        const x = 10 + r() * 1004, y = 12 + r() * 104;
+        if (x > 250 && x < 774) { if (y > 22 && y < 112) continue; }
+        spr += `<rect x="-5" y="-2" width="10" height="4" rx="2" fill="${cols[i % cols.length]}" opacity=".85" transform="translate(${x.toFixed(0)},${y.toFixed(0)}) rotate(${(r() * 180).toFixed(0)})"/>`;
+      }
+      return spr + donut(78, 66, 1.15, 10, '#ffffff', 3) + donut(178, 60, 0.95, -20, '#6b3e26', 9)
+        + donut(848, 62, 0.95, 15, '#7bdcff', 5) + donut(946, 66, 1.15, -10, '#ff3d6e', 11);
+    },
+  },
+  {
+    name: 'ROCKET FOOT', tag: 'Taking Free Kicks To Another Level',
+    bg: '#14286b', fill: '#ffd21f', pill: '#ff4d2e', pillText: '#ffffff',
+    art: () => {
+      const r = rng(99); let st = '';
+      for (let i = 0; i < 26; i++) st += `<circle cx="${(r() * 1000 + 12).toFixed(0)}" cy="${(r() * 104 + 12).toFixed(0)}" r="${(1 + r() * 1.8).toFixed(1)}" fill="#fff" opacity="${(0.35 + r() * 0.5).toFixed(2)}"/>`;
+      return st + speedLines(14, 30, 40, 2, 10, '#7ec8ff', 4, .6) + rocket(150, 64, 0.95, -8) + sparkle(220, 26, 8, '#ffd21f')
+        + sparkle(30, 100, 7, '#fff')
+        + speedLines(788, 36, 46, 2, 10, '#7ec8ff', 4, .6) + speedLines(788, 96, 46, 2, 10, '#7ec8ff', 4, .6)
+        + flameTrail(940, 64, 120, 30) + ball(950, 64, 32, 25) + sparkle(1000, 22, 8, '#ffd21f');
+    },
+  },
+];
+
+// ---------- board frame / background ----------
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(amt < 0 ? v * (1 + amt) : v + (255 - v) * amt));
+  return '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
+function boardSvg(b, i) {
+  const g = 'g' + i;
+  let rays = '';
+  for (let k = 0; k < 28; k += 2) {
+    const a0 = (k / 28) * Math.PI * 2, a1 = ((k + 1) / 28) * Math.PI * 2, L = 1400;
+    rays += `<polygon points="512,64 ${512 + L * Math.cos(a0)},${64 + L * Math.sin(a0) * 0.35} ${512 + L * Math.cos(a1)},${64 + L * Math.sin(a1) * 0.35}"/>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" data-board="${i}">
+  <defs>
+    <linearGradient id="${g}v" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/>
+    </linearGradient>
+    <pattern id="${g}p" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <rect width="7" height="14" fill="#fff" opacity=".05"/></pattern>
+  </defs>
+  <rect width="${W}" height="${H}" fill="${b.bg}"/>
+  <rect width="${W}" height="${H}" fill="url(#${g}p)"/>
+  <g fill="${shade(b.bg, 0.25)}" opacity=".35">${rays}</g>
+  <rect width="${W}" height="${H}" fill="url(#${g}v)"/>
+  <g class="art">${b.art()}</g>
+  <g class="brand" font-family="Luckiest Guy" text-anchor="middle">
+    <text class="b-shadow" x="512" y="66" font-size="54" fill="${INK}" stroke="${INK}" stroke-width="10" stroke-linejoin="round" letter-spacing="1.5">${b.name}</text>
+    <text class="b-main" x="512" y="62" font-size="54" fill="${b.fill}" stroke="${INK}" stroke-width="10" stroke-linejoin="round" paint-order="stroke" letter-spacing="1.5">${b.name}</text>
+  </g>
+  <g class="tag" font-family="Lilita One" text-anchor="middle">
+    <rect class="pill" x="0" y="78" height="30" rx="15" fill="${b.pill}" stroke="${INK}" stroke-width="4"/>
+    <text class="t" x="512" y="101" font-size="21" fill="${b.pillText}" letter-spacing=".5">${b.tag}</text>
+  </g>
+  <rect x="3" y="3" width="${W - 6}" height="${H - 6}" fill="none" stroke="${INK}" stroke-width="6"/>
+  <rect x="9" y="9" width="${W - 18}" height="${H - 18}" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>
+</svg>`;
+}
+
+const sheet = document.getElementById('sheet');
+sheet.innerHTML = boards.map((b, i) => boardSvg(b, i)).join('<div class="sep"></div>');
+
+document.fonts.load('54px "Luckiest Guy"').then(() => document.fonts.load('21px "Lilita One"')).then(() => document.fonts.ready).then(() => {
+  const MAX_BRAND = 520;
+  for (const svg of sheet.querySelectorAll('svg')) {
+    const main = svg.querySelector('.b-main'), shadow = svg.querySelector('.b-shadow');
+    const w = main.getBBox().width;
+    if (w > MAX_BRAND) {
+      const fs = (54 * MAX_BRAND / w).toFixed(1);
+      main.setAttribute('font-size', fs); shadow.setAttribute('font-size', fs);
+    }
+    const t = svg.querySelector('.t'), pill = svg.querySelector('.pill');
+    const tw = t.getBBox().width + 34;
+    pill.setAttribute('x', (512 - tw / 2).toFixed(1));
+    pill.setAttribute('width', tw.toFixed(1));
+  }
+  window.__ready = { boards: boards.map((b) => b.name), W, H, SEP };
+});
+</script>
+</body>
+</html>
