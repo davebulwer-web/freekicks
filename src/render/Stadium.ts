@@ -39,6 +39,7 @@ export class Stadium {
   private cameramanPos: Vector3[] = [];
   private time = 0;
   excitement = 0;
+  private held = false;
 
   constructor(private assets: AssetManager, shadowMat: MeshBasicMaterial) {
     const layout = assets.stadium;
@@ -110,6 +111,7 @@ export class Stadium {
         frames: { value: c.frames },
         time: { value: 0 },
         excite: { value: 0 },
+        tint: { value: 1 },
       },
       vertexShader: /* glsl */ `
         attribute float variant;
@@ -129,11 +131,12 @@ export class Stadium {
         }`,
       fragmentShader: /* glsl */ `
         uniform sampler2D atlas;
+        uniform float tint;
         varying vec2 vUv;
         void main() {
           vec4 c = texture2D(atlas, vUv);
           if (c.a < 0.5) discard;
-          gl_FragColor = c;
+          gl_FragColor = vec4(c.rgb * tint, c.a);
           #include <colorspace_fragment>
         }`,
       side: DoubleSide,
@@ -220,9 +223,21 @@ export class Stadium {
     }
   }
 
+  /** Darken the crowd (night matches, rain). */
+  setCrowdTint(v: number) {
+    for (const m of this.crowdMats) m.uniforms.tint.value = v;
+  }
+
+  /** Force the crowd level for this frame (replays play back the recorded level). */
+  holdExcitement(v: number) {
+    this.excitement = v;
+    this.held = true;
+  }
+
   update(dt: number, camPos: Vector3) {
     this.time += dt;
-    this.excitement = Math.max(0, this.excitement - dt * 0.15);
+    if (!this.held) this.excitement = Math.max(0, this.excitement - dt * 0.15);
+    this.held = false;
     for (const m of this.crowdMats) {
       m.uniforms.time.value = this.time;
       m.uniforms.excite.value = this.excitement;

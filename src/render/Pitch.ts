@@ -1,6 +1,8 @@
-import { BufferGeometry, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, CircleGeometry } from 'three';
+import { BufferGeometry, Color, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial, MeshLambertMaterial, MeshPhongMaterial, PlaneGeometry, CircleGeometry } from 'three';
 import type { AssetManager } from '../assets/AssetManager';
 import { PITCH } from '../config/rules';
+import { SURFACE_EXTENT } from '../config/surface';
+import type { WeatherKind } from '../config/types';
 
 type P2 = [number, number];
 
@@ -8,7 +10,13 @@ type P2 = [number, number];
  * Pitch surface and markings, generated from the real IFAB dimensions on a single flat plane,
  * so the perspective is always geometrically correct.
  */
-export function buildPitch(assets: AssetManager): Group {
+export interface PitchView {
+  group: Group;
+  /** Show the wet (puddles) or snow overlay for the weather. */
+  setSurface(kind: WeatherKind): void;
+}
+
+export function buildPitch(assets: AssetManager): PitchView {
   const g = new Group();
   const L = PITCH.length;
   const W = PITCH.width;
@@ -24,7 +32,8 @@ export function buildPitch(assets: AssetManager): Group {
   grass.repeat.set(gw / 10.5, gl / 10.5);
   // Align stripe boundaries with the goal lines.
   grass.offset.set(0, (6 % 10.5) / 10.5);
-  const field = new Mesh(new PlaneGeometry(gw, gl).rotateX(-Math.PI / 2), new MeshLambertMaterial({ map: grass }));
+  const grassMat = new MeshLambertMaterial({ map: grass });
+  const field = new Mesh(new PlaneGeometry(gw, gl).rotateX(-Math.PI / 2), grassMat);
   field.position.set(0, 0, L / 2);
   field.receiveShadow = true;
   g.add(field);
@@ -41,7 +50,29 @@ export function buildPitch(assets: AssetManager): Group {
     s.position.set(0, 0.007, z);
     g.add(s);
   }
-  return g;
+
+  // Weather overlays sit between the grass and the markings, so the lines always stay visible.
+  const E = SURFACE_EXTENT;
+  const overlayGeo = new PlaneGeometry(E.x1 - E.x0, E.z1 - E.z0).rotateX(-Math.PI / 2);
+  const overlay = (mat: MeshLambertMaterial | MeshPhongMaterial) => {
+    const m = new Mesh(overlayGeo, mat);
+    m.position.set((E.x0 + E.x1) / 2, 0.003, (E.z0 + E.z1) / 2);
+    m.visible = false;
+    g.add(m);
+    return m;
+  };
+  const offset = { transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 };
+  const wet = overlay(new MeshPhongMaterial({ map: assets.texture(assets.manifest.textures.pitchWet), shininess: 90, specular: new Color(0x9aaabb), ...offset }));
+  const snow = overlay(new MeshLambertMaterial({ map: assets.texture(assets.manifest.textures.pitchSnow), ...offset }));
+
+  return {
+    group: g,
+    setSurface(kind) {
+      wet.visible = kind === 'rain';
+      snow.visible = kind === 'snow';
+      grassMat.color.set(kind === 'rain' ? 0xc2ccc2 : kind === 'snow' ? 0xdfe6e8 : 0xffffff);
+    },
+  };
 }
 
 export function buildLines(): BufferGeometry {

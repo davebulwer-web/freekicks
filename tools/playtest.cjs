@@ -25,7 +25,7 @@ async function main() {
   const wait = (ms) => page.waitForTimeout(ms);
 
   await page.goto(url);
-  await page.waitForSelector('.btn.big', { timeout: 60000 });
+  await page.waitForSelector('.mode-card', { timeout: 60000 });
   await wait(2500);
   await shot('01-menu');
   await page.click('text=TEAMS & KITS');
@@ -58,8 +58,7 @@ async function main() {
   const plan = [[0.72, 0.62, 0.35], [0.7, 0.3, 0.75], [0.2, 0.05, 0.5], [0.95, 0.5, 0.5], [0.1, 0.95, 0.1], [0.5, 0.5, 0.5]];
   for (let k = 0; k < 8; k++) {
     const p = plan[k % plan.length];
-    const go = await page.$('.btn.big');
-    if (go && (await page.$('text=GAME OVER'))) break;
+    if (await page.$('text=GAME OVER')) break;
     await tapAt(p[0]); await tapAt(p[1]); await tapAt(p[2]);
     await wait(900);
     await shot(`1${k}-a-flight`);

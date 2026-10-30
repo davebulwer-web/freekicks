@@ -88,6 +88,10 @@ The goalkeeper and referee use the same sheets in their own kit colours. If you'
 | stand | `textures/stand.png` | Front of one seating row, tiled every 4 m along the stand. |
 | dugout | `textures/dugout.png` | Front face of a 6 m × 2.2 m dugout. |
 | sky | `textures/sky.png` | Mapped onto a sky dome. |
+| pitchWet | `textures/pitch_wet.png` | Rain overlay covering the whole grass area (x −40..40 m, z −6..111 m; top row = the near goal end). **Alpha = standing-water depth.** The ball physics reads it too: above 25% (alpha 64) is a puddle that slows the ball and splashes. Keep damp patches below that. |
+| pitchSnow | `textures/pitch_snow.png` | Snow overlay with the same extent. Alpha is snow thickness. Keep it below about 85% so the turf shows through. Pitch markings are always drawn on top. |
+| target | `textures/target.png` | Round board for Target Challenge (square image, circle-masked). |
+| floodlight | `textures/floodlight.png` | Lamp panel on the floodlight towers (Night Match). |
 
 ## Advertising hoardings
 
@@ -104,4 +108,4 @@ The goalkeeper and referee use the same sheets in their own kit colours. If you'
 
 ## Audio
 
-`manifest.audio` has slots for `kick`, `whistle`, `post`, `net`, `bounce`, `cheer`, `groan` and `crowd`. Leave a slot empty to use the synthesised placeholder, or set a path such as `"audio/kick.ogg"` (relative to `public/assets/`) to use your own file.
+`manifest.audio` has slots for `kick`, `whistle`, `post`, `net`, `bounce`, `cheer`, `groan`, `crowd` and `splash`. Leave a slot empty to use the synthesised placeholder, or set a path such as `"audio/kick.ogg"` (relative to `public/assets/`) to use your own file.

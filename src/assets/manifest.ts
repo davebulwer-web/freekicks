@@ -87,6 +87,10 @@ export const DEFAULT_MANIFEST: Manifest = {
     dugout: 'textures/dugout.png',
     sky: 'textures/sky.png',
     surround: 'textures/surround.png',
+    pitchWet: 'textures/pitch_wet.png',
+    pitchSnow: 'textures/pitch_snow.png',
+    target: 'textures/target.png',
+    floodlight: 'textures/floodlight.png',
   },
   hoardings: [
     'hoardings/hoarding_01.png',
@@ -106,6 +110,7 @@ export const DEFAULT_MANIFEST: Manifest = {
     cheer: '',
     groan: '',
     crowd: '',
+    splash: '',
   },
 };
 

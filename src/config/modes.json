@@ -13,12 +13,73 @@
   {
     "id": "weather",
     "name": "Weather Challenge",
-    "description": "Gales, rain and snow. Slippery balls, skidding bounces and fumbling keepers.",
+    "description": "Gales, rain and snow. Puddles, skidding bounces and fumbling keepers.",
     "lives": 3,
     "windMin": 2,
     "windMax": 7,
     "windRampPerStage": 0.2,
     "weather": { "clear": 1, "rain": 2, "snow": 1.5 },
     "scoreMultiplier": 1.25
+  },
+  {
+    "id": "time-attack",
+    "name": "Time Attack",
+    "description": "90 seconds on the clock. No lives - score as many as you can.",
+    "lives": 3,
+    "timeLimit": 90,
+    "replay": "short",
+    "windMin": 0,
+    "windMax": 2.5,
+    "windRampPerStage": 0.15,
+    "weather": { "clear": 1 },
+    "scoreMultiplier": 1
+  },
+  {
+    "id": "targets",
+    "name": "Target Challenge",
+    "description": "Hit the boards hung in the goal for a 1,000 point bonus.",
+    "lives": 3,
+    "targets": { "min": 1, "max": 2, "radius": 0.42, "bonus": 1000 },
+    "windMin": 0,
+    "windMax": 2,
+    "windRampPerStage": 0.2,
+    "weather": { "clear": 1 },
+    "scoreMultiplier": 1.1
+  },
+  {
+    "id": "sudden-death",
+    "name": "Sudden Death",
+    "description": "One life. One miss and it's all over. How far can you go?",
+    "lives": 1,
+    "windMin": 0,
+    "windMax": 3,
+    "windRampPerStage": 0.25,
+    "weather": { "clear": 3, "rain": 1 },
+    "scoreMultiplier": 1.5
+  },
+  {
+    "id": "bending",
+    "name": "Bending Masterclass",
+    "description": "Goals only count with at least 50% swerve. Double swerve bonus.",
+    "lives": 3,
+    "minSwerve": 0.5,
+    "swerveBonusMultiplier": 2,
+    "windMin": 0,
+    "windMax": 1.5,
+    "windRampPerStage": 0.15,
+    "weather": { "clear": 1 },
+    "scoreMultiplier": 1.2
+  },
+  {
+    "id": "night",
+    "name": "Night Match",
+    "description": "Under the floodlights. Arcade rules on a cold evening.",
+    "lives": 3,
+    "night": true,
+    "windMin": 0,
+    "windMax": 2.5,
+    "windRampPerStage": 0.25,
+    "weather": { "clear": 3, "rain": 1 },
+    "scoreMultiplier": 1.1
   }
 ]

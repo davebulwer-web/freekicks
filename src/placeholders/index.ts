@@ -1,5 +1,6 @@
 import type { CharacterSet, Manifest } from '../assets/manifest';
 import { Rng } from '../core/Rng';
+import { SURFACE_EXTENT, fbm, puddleDepth, snowCover } from '../config/surface';
 import { DEFAULT_PALETTE, fitPose, poseFor, renderFrame, type Palette, type Pose } from './figure';
 
 /**
@@ -245,6 +246,86 @@ export function generateSurround(): HTMLCanvasElement {
   return c;
 }
 
+/** Fill an overlay covering SURFACE_EXTENT; row 0 = goal-end (z0), column 0 = x0. */
+function surfaceOverlay(fn: (x: number, z: number) => [number, number, number, number]): HTMLCanvasElement {
+  const W = 1024, H = 1536;
+  const [c, g] = canvas(W, H);
+  const img = g.createImageData(W, H);
+  const E = SURFACE_EXTENT;
+  for (let r = 0; r < H; r++) {
+    const z = E.z0 + ((r + 0.5) / H) * (E.z1 - E.z0);
+    for (let col = 0; col < W; col++) {
+      const x = E.x0 + ((col + 0.5) / W) * (E.x1 - E.x0);
+      const [R, G, B, A] = fn(x, z);
+      const i = (r * W + col) * 4;
+      img.data[i] = R; img.data[i + 1] = G; img.data[i + 2] = B; img.data[i + 3] = A;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  return c;
+}
+
+/** Wet pitch: alpha = standing water depth (also read by the ball physics). Damp patches stay below 25%. */
+export function generatePitchWet(): HTMLCanvasElement {
+  return surfaceOverlay((x, z) => {
+    const d = puddleDepth(x, z);
+    if (d > 0) {
+      // Water reflecting an overcast sky, darker at the edges where it's shallow.
+      const k = 0.75 + 0.25 * d;
+      return [Math.round(96 * k), Math.round(112 * k), Math.round(124 * k), Math.round(Math.max(0.3, d) * 230)];
+    }
+    const damp = fbm(x / 2.2, z / 2.2, 51);
+    return [18, 34, 20, Math.round(Math.max(0, damp - 0.45) * 0.5 * 255)];
+  });
+}
+
+/** Thin snow layer: never fully opaque, thinner on worn areas, so turf and markings show through. */
+export function generatePitchSnow(): HTMLCanvasElement {
+  return surfaceOverlay((x, z) => {
+    const s = snowCover(x, z);
+    const tone = 0.93 + (fbm(x / 0.6, z / 0.6, 61) - 0.5) * 0.12;
+    return [Math.round(236 * tone), Math.round(241 * tone), Math.round(250 * tone), Math.round(s * 255)];
+  });
+}
+
+/** Round target board hung in the goal (Target Challenge). */
+export function generateTarget(): HTMLCanvasElement {
+  const [c, g] = canvas(256, 256);
+  const rings = ['#ffffff', '#d01f2e', '#ffffff', '#d01f2e', '#ffd200'];
+  rings.forEach((col, i) => {
+    g.fillStyle = col;
+    g.beginPath();
+    g.arc(128, 128, 126 - i * 24, 0, Math.PI * 2);
+    g.fill();
+  });
+  g.lineWidth = 4;
+  g.strokeStyle = '#111';
+  g.beginPath();
+  g.arc(128, 128, 124, 0, Math.PI * 2);
+  g.stroke();
+  return c;
+}
+
+/** Floodlight lamp panel (night matches): a grid of glowing lamps. */
+export function generateFloodlight(): HTMLCanvasElement {
+  const [c, g] = canvas(256, 128);
+  g.fillStyle = '#2a2e35';
+  g.fillRect(0, 0, 256, 128);
+  for (let r = 0; r < 3; r++)
+    for (let i = 0; i < 8; i++) {
+      const x = 18 + i * 31, y = 22 + r * 40;
+      const grd = g.createRadialGradient(x, y, 2, x, y, 15);
+      grd.addColorStop(0, '#ffffff');
+      grd.addColorStop(0.5, '#fff6d8');
+      grd.addColorStop(1, '#8a8470');
+      g.fillStyle = grd;
+      g.beginPath();
+      g.arc(x, y, 13, 0, Math.PI * 2);
+      g.fill();
+    }
+  return c;
+}
+
 const ADS: [string, string, string][] = [
   ['YOUR AD HERE', '#d01f2e', '#ffffff'],
   ['FREE KICKS', '#0d2b6b', '#ffd200'],
@@ -288,6 +369,10 @@ export function generatePlaceholder(path: string, m: Manifest): HTMLCanvasElemen
     [t.dugout]: generateDugout,
     [t.sky]: generateSky,
     [t.surround]: generateSurround,
+    [t.pitchWet]: generatePitchWet,
+    [t.pitchSnow]: generatePitchSnow,
+    [t.target]: generateTarget,
+    [t.floodlight]: generateFloodlight,
   };
   if (table[path]) return table[path]();
   const hi = m.hoardings.indexOf(path);

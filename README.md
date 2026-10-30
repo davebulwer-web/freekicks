@@ -6,7 +6,14 @@ A free-kick arcade game for Android in the style of *Roberto Baggio's Magical Ki
 - **3 lives.** A goal refills your lives, scores points and moves you on to a harder free kick. A miss costs a life and you retake the same kick. Losing all three is game over.
 - **Points:** target zone (the top corners score most), plus a swerve bonus, times a difficulty multiplier (distance, angle, wall size, keeper quality). A rebound goal saves the life and scores a flat 100.
 - **Live play** after the kick: the ball comes off posts, crossbar, net, wall and keeper. The keeper catches or parries, defenders clear, and attackers follow in for an automatic rebound shot. The ball going out of play counts as a miss.
-- **Modes:** *Arcade* and *Weather Challenge* (strong wind, rain with a skidding ball and fumbling keepers, snow). Modes are data in `src/config/modes.json`.
+- **Modes** (data in `src/config/modes.json`):
+  - *Arcade*
+  - *Weather Challenge*: gales; rain with puddles that slow the ball and fumbling keepers; snow
+  - *Time Attack*: 90 s, no lives
+  - *Target Challenge*: boards in the goal for a 1,000-point bonus
+  - *Sudden Death*: one life
+  - *Bending Masterclass*: goals need at least 50% swerve; double swerve bonus
+  - *Night Match*: floodlit
 - **Replays:** after every kick, an automatic replay from behind the goal plus one other angle (side, keeper, kicker, aerial). Drag to orbit, pinch to zoom, CAMERA cycles the angles, SKIP moves on. You can also drag to rotate the view while aiming.
 - **Teams & kits:** preset teams in `src/config/teams.json` and an in-game kit editor (plain, stripes, hoops, halves, sash, with colours for shirt, shorts and socks plus the keeper kit). Teams are saved on the device.
 - **Stadium dressing:** hoardings, stands with an animated crowd, cameramen, dugouts, corner flags and optional glTF models, all data-driven.

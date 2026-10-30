@@ -9,6 +9,7 @@ interface Frame {
   t: number;
   ball: Float32Array; // x y z qx qy qz qw
   people: Float32Array; // per person: x z jumpY heading anim animTime
+  excitement: number;
 }
 
 export interface ReplayState {
@@ -16,21 +17,25 @@ export interface ReplayState {
   ballRot: Quaternion;
   people: { pos: Vector3; jumpY: number; heading: number; anim: string; animTime: number }[];
   netHits: { pos: Vector3; strength: number; t: number }[];
+  /** Crowd excitement at this moment of the replay. */
+  excitement: number;
 }
 
 /** Records a match at 60 Hz for replays; playback interpolates between frames. */
 export class Recorder {
   frames: Frame[] = [];
   netHits: { pos: Vector3; strength: number; t: number }[] = [];
+  /** Water splashes (time-stamped) to replay as particle bursts. */
+  splashes: { pos: Vector3; strength: number; t: number }[] = [];
   private lastNet: unknown = null;
 
-  capture(m: Match) {
+  capture(m: Match, excitement = 0) {
     const ball = new Float32Array([m.ball.pos.x, m.ball.pos.y, m.ball.pos.z, m.ball.rot.x, m.ball.rot.y, m.ball.rot.z, m.ball.rot.w]);
     const people = new Float32Array(m.people.length * STRIDE);
     m.people.forEach((p, i) => {
       people.set([p.pos.x, p.pos.z, p.jumpY, p.heading, ANIMS.indexOf(p.anim), p.animTime], i * STRIDE);
     });
-    this.frames.push({ t: m.time, ball, people });
+    this.frames.push({ t: m.time, ball, people, excitement });
     if (m.netImpact && m.netImpact !== this.lastNet) {
       this.lastNet = m.netImpact;
       this.netHits.push({ pos: m.netImpact.pos.clone(), strength: m.netImpact.strength, t: m.netImpact.time });
@@ -59,7 +64,9 @@ export class Recorder {
       ballRot: new Quaternion(),
       people: Array.from({ length: n }, () => ({ pos: new Vector3(), jumpY: 0, heading: 0, anim: 'idle', animTime: 0 })),
       netHits: this.netHits,
+      excitement: 0,
     };
+    s.excitement = lerp(a.excitement, b.excitement, k);
     s.ballPos.set(lerp(a.ball[0], b.ball[0], k), lerp(a.ball[1], b.ball[1], k), lerp(a.ball[2], b.ball[2], k));
     s.ballRot.set(a.ball[3], a.ball[4], a.ball[5], a.ball[6]).slerp(new Quaternion(b.ball[3], b.ball[4], b.ball[5], b.ball[6]), k);
     for (let i = 0; i < n; i++) {

@@ -12,6 +12,9 @@ export class Hud {
   private teams = el('div.hud-teams');
   private stage = el('div.hud-stage');
   private lives = el('div.hud-lives');
+  private clock = el('div.hud-clock');
+  private modeTag = el('div.hud-mode');
+  private deadZone = el('div.bar-deadzone');
   private windArrow = el('div.wind-arrow');
   private windText = el('div.wind-text');
   private weatherIcon = el('div.weather-icon');
@@ -31,7 +34,7 @@ export class Hud {
     BAR_NAMES.forEach((name, i) => {
       const marker = el('div.bar-marker');
       const label = el('div.bar-label', { text: name });
-      const track = el('div.bar-track', {}, [i === 2 ? el('div.bar-centre') : null, marker]);
+      const track = el('div.bar-track', {}, [i === 2 ? this.deadZone : null, i === 2 ? el('div.bar-centre') : null, marker]);
       const root = el('div.bar', {}, [label, track]);
       this.bars.push({ root, marker, label });
       this.barPanel.append(root);
@@ -44,7 +47,7 @@ export class Hud {
       ])),
     );
     this.root = el('div.hud', {}, [
-      el('div.hud-top', {}, [el('div.hud-left', {}, [this.teams, this.score, this.lives]), this.stage]),
+      el('div.hud-top', {}, [el('div.hud-left', {}, [this.teams, this.score, this.lives, this.clock, this.modeTag]), this.stage]),
       el('div.wind', {}, [el('div.wind-dial', {}, [this.windArrow]), this.windText, this.weatherIcon]),
       shield(el('button.btn.exit', { text: 'EXIT', onclick: () => this.onExit() })),
       shield(el('button.btn.view', { text: '⟲ VIEW', title: 'Reset camera', onclick: () => this.onResetView() })),
@@ -55,6 +58,23 @@ export class Hud {
     ]);
     parent.append(this.root);
     this.showReplay(false);
+  }
+
+  /** Mode-specific HUD: clock for Time Attack, dead zone for Bending, etc. */
+  configure(opts: { timed: boolean; minSwerve?: number; tag?: string }) {
+    this.lives.style.display = opts.timed ? 'none' : '';
+    this.clock.style.display = opts.timed ? '' : 'none';
+    const dz = opts.minSwerve ?? 0;
+    this.deadZone.style.display = dz > 0 ? '' : 'none';
+    this.deadZone.style.left = `${50 - dz * 50}%`;
+    this.deadZone.style.width = `${dz * 100}%`;
+    this.modeTag.textContent = opts.tag ?? '';
+  }
+
+  setClock(seconds: number) {
+    const s = Math.ceil(seconds);
+    this.clock.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    this.clock.classList.toggle('low', seconds <= 10);
   }
 
   show(v: boolean) {

@@ -29,25 +29,48 @@ export class Session {
   constructor(readonly mode: ModeConfig, runSeed = (Math.random() * 2 ** 31) >>> 0) {
     this.runSeed = runSeed;
     this.lives = mode.lives;
+    this.timeLeft = mode.timeLimit ?? Infinity;
     this.current = makeStage(1, mode, runSeed);
   }
 
+  /** Time Attack clock (Infinity in other modes). */
+  timeLeft: number;
+
+  get timed(): boolean {
+    return this.mode.timeLimit !== undefined;
+  }
+
   get gameOver(): boolean {
-    return this.lives <= 0;
+    return this.timed ? this.timeLeft <= 0 : this.lives <= 0;
+  }
+
+  tick(dt: number) {
+    if (this.timed) this.timeLeft = Math.max(0, this.timeLeft - dt);
+  }
+
+  /** Whether a goal counts under this mode's rules (Bending Masterclass needs enough swerve). */
+  counts(outcome: Outcome, shot: ShotInput): boolean {
+    if (!outcome.goal) return false;
+    if (outcome.rebound || this.mode.minSwerve === undefined) return true;
+    return Math.abs(shot.swerve) >= this.mode.minSwerve;
   }
 
   record(outcome: Outcome, shot: ShotInput): KickResult {
     const livesBefore = this.lives;
     let points: ScoreBreakdown | null = null;
     this.kicks++;
+    if (outcome.goal && !this.counts(outcome, shot)) {
+      outcome = { ...outcome, goal: false, kind: 'nobend', message: 'NOT ENOUGH BEND!' };
+    }
     if (outcome.goal) {
-      points = scoreGoal(outcome, shot, this.current, this.mode.scoreMultiplier);
+      points = scoreGoal(outcome, shot, this.current, this.mode);
+      if (points.target) outcome = { ...outcome, message: 'TARGET!' };
       this.score += points.total;
       this.goals++;
       this.lives = this.mode.lives;
       this.stage++;
       this.current = makeStage(this.stage, this.mode, this.runSeed);
-    } else {
+    } else if (!this.timed) {
       this.lives--;
     }
     const r = { outcome, points, livesBefore, livesAfter: this.lives, gameOver: this.gameOver };

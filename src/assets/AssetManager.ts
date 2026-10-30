@@ -1,4 +1,5 @@
 import { CanvasTexture, LinearFilter, NearestFilter, RepeatWrapping, SRGBColorSpace, Texture } from 'three';
+import { puddleSampler } from '../config/surface';
 import { generatePlaceholder } from '../placeholders';
 import { DEFAULT_MANIFEST, mergeManifest, type Manifest } from './manifest';
 import { DEFAULT_STADIUM, type StadiumLayout } from './stadium';
@@ -46,6 +47,23 @@ export class AssetManager {
         onProgress?.(++done, paths.size);
       }),
     );
+  }
+
+  private puddles: ((x: number, z: number) => number) | null = null;
+
+  /** Puddle depth read from the wet-pitch overlay's alpha, so replacement art drives the physics. */
+  puddleAt(): ((x: number, z: number) => number) | undefined {
+    if (this.puddles) return this.puddles;
+    const img = this.images.get(this.manifest.textures.pitchWet);
+    if (!img) return undefined;
+    const w = 256, h = 384;
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const g = c.getContext('2d', { willReadFrequently: true })!;
+    g.drawImage(img, 0, 0, w, h);
+    this.puddles = puddleSampler(g.getImageData(0, 0, w, h).data, w, h);
+    return this.puddles;
   }
 
   /** Texture for a manifest path. `data` textures (masks, UV maps) use nearest filtering and no colour conversion. */

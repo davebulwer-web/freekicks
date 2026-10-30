@@ -34,6 +34,24 @@ export interface ModeConfig {
   weather: Partial<Record<WeatherKind, number>>;
   /** Final points multiplier for this mode. */
   scoreMultiplier: number;
+  /** Time Attack: seconds on the clock. When set, misses don't cost lives. */
+  timeLimit?: number;
+  /** Target Challenge: round boards hung in the goal. */
+  targets?: { min: number; max: number; radius: number; bonus: number };
+  /** Bending Masterclass: |swerve| (0..1) needed for a goal to count. */
+  minSwerve?: number;
+  swerveBonusMultiplier?: number;
+  /** Floodlit evening match. */
+  night?: boolean;
+  /** 'short' = a single replay pass. */
+  replay?: 'full' | 'short';
+}
+
+export interface TargetBoard {
+  /** Centre across the goal (x) and height (y), metres. */
+  x: number;
+  y: number;
+  r: number;
 }
 
 export interface StageSetup {
@@ -47,4 +65,5 @@ export interface StageSetup {
   weather: WeatherKind;
   markers: number;
   attackers: number;
+  targets?: TargetBoard[];
 }

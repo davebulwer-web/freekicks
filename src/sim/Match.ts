@@ -1,5 +1,7 @@
 import { Vector3 } from 'three';
 import { HALF_GOAL, PITCH, RULES } from '../config/rules';
+import { PUDDLE_THRESHOLD, puddleDepth } from '../config/surface';
+import { targetAt } from '../config/stages';
 import type { StageSetup } from '../config/types';
 import { EventBus } from '../core/EventBus';
 import { Rng } from '../core/Rng';
@@ -9,7 +11,7 @@ import { GOAL_LINE_CROSSED_Z, collideFrame, collideOuterNet, confineToNet, inMou
 import { computeKick, type ShotInput } from './Kick';
 import { Person, type Role } from './Person';
 
-export type OutcomeKind = 'goal' | 'saved' | 'wide' | 'over' | 'post' | 'bar' | 'blocked' | 'cleared' | 'out' | 'timeout';
+export type OutcomeKind = 'goal' | 'saved' | 'wide' | 'over' | 'post' | 'bar' | 'blocked' | 'cleared' | 'out' | 'timeout' | 'nobend';
 
 export interface Outcome {
   kind: OutcomeKind;
@@ -29,6 +31,7 @@ export interface MatchEvents {
   net: { pos: Vector3; speed: number };
   touch: { role: Role; pos: Vector3; kind: 'block' | 'save' | 'catch' | 'clear' | 'shot' };
   outcome: Outcome;
+  splash: { pos: Vector3; speed: number };
 }
 
 type BallState = 'dead' | 'flight' | 'loose' | 'held' | 'net' | 'cleared';
@@ -64,6 +67,8 @@ export class Match {
   /** Last ball crossing of the goal-line plane. */
   crossing: { x: number; y: number; inMouth: boolean } | null = null;
   lastTouch: TouchKind = 'none';
+  /** Target Challenge: board the ball went through, and when. */
+  targetHit: { index: number; time: number } | null = null;
   attackerShotUsed = false;
   keeper!: Person;
   kicker!: Person;
@@ -73,9 +78,18 @@ export class Match {
   private contactPoint = new Vector3();
   private wallSide = 1;
 
-  constructor(readonly setup: StageSetup) {
+  private inPuddle = false;
+
+  constructor(
+    readonly setup: StageSetup,
+    opts: { puddleAt?: (x: number, z: number) => number } = {},
+  ) {
     this.rng = new Rng(setup.seed ^ 0x9e3779b9);
-    this.env = { wind: new Vector3(setup.wind.x, 0, setup.wind.z), surface: SURFACES[setup.weather] };
+    this.env = {
+      wind: new Vector3(setup.wind.x, 0, setup.wind.z),
+      surface: SURFACES[setup.weather],
+      puddleAt: setup.weather === 'rain' ? (opts.puddleAt ?? puddleDepth) : undefined,
+    };
     this.ballStart.set(setup.ballPos.x, BALL_RADIUS, setup.ballPos.z);
     this.ball.pos.copy(this.ballStart);
     this.toGoal.set(-setup.ballPos.x, 0, -setup.ballPos.z).normalize();
@@ -237,6 +251,11 @@ export class Match {
     const prevX = ball.pos.x;
     const bounced = ball.step(dt, this.env);
     if (bounced && ball.speed > 2) this.events.emit('bounce', { pos: ball.pos.clone(), speed: ball.speed });
+    if (this.env.puddleAt) {
+      const wet = ball.pos.y < BALL_RADIUS + 0.03 && this.env.puddleAt(ball.pos.x, ball.pos.z) > PUDDLE_THRESHOLD;
+      if (wet && !this.inPuddle && ball.speed > 1.5) this.events.emit('splash', { pos: ball.pos.clone(), speed: ball.speed });
+      this.inPuddle = wet;
+    }
 
     if (this.ballState === 'net') {
       const hit = confineToNet(ball);
@@ -257,6 +276,8 @@ export class Match {
       const x = lerp(prevX, ball.pos.x, t);
       const y = lerp(prevY, ball.pos.y, t);
       this.crossing = { x, y, inMouth: inMouth(x, y) };
+      const ti = targetAt(this.setup.targets, x, y);
+      if (ti >= 0 && !this.targetHit) this.targetHit = { index: ti, time: this.time };
     }
 
     if (ball.pos.z < GOAL_LINE_CROSSED_Z && !this.outcome) {

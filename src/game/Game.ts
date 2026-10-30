@@ -57,7 +57,7 @@ export class Game {
   private demo = false;
   private pausedFrom: State = 'aim';
 
-  constructor(canvas: HTMLCanvasElement, ui: HTMLElement, assets: AssetManager) {
+  constructor(canvas: HTMLCanvasElement, ui: HTMLElement, private assets: AssetManager) {
     this.world = new World(canvas, assets);
     this.hud = new Hud(ui);
     this.menus = new Menus(ui, assets);
@@ -87,6 +87,7 @@ export class Game {
     this.home = Teams.get(sel.home);
     this.away = Teams.get(sel.away);
     const s = new Session(this.menusMode(), this.rng.int(1, 1e6));
+    this.world.setNight(false);
     this.newMatch(s);
     this.world.director.setPreset('tv');
     this.menus.main();
@@ -103,13 +104,19 @@ export class Game {
     this.home = Teams.get(sel.home);
     this.away = Teams.get(sel.away);
     this.session = new Session(mode);
+    this.world.setNight(!!mode.night);
+    this.hud.configure({
+      timed: this.session.timed,
+      minSwerve: mode.minSwerve,
+      tag: mode.targets ? 'HIT THE TARGETS' : mode.minSwerve ? `MIN ${Math.round(mode.minSwerve * 100)}% SWERVE` : mode.lives === 1 ? 'ONE LIFE' : '',
+    });
     this.menus.hide();
     this.hud.show(true);
     this.nextKick();
   }
 
   private newMatch(session: Session) {
-    this.match = new Match(session.current);
+    this.match = new Match(session.current, { puddleAt: this.assets.puddleAt() });
     this.recorder = new Recorder();
     this.world.bindMatch(this.match, this.home, this.away);
     this.bindSounds(this.match);
@@ -134,6 +141,7 @@ export class Game {
     const s = this.session;
     if (!s) return;
     this.hud.setInfo(this.home.short, this.away.short, s.score, s.stage, s.lives, s.mode.lives);
+    if (s.timed) this.hud.setClock(s.timeLeft);
   }
 
   /** A short tap anywhere on the pitch. */
@@ -179,12 +187,18 @@ export class Game {
       this.world.stadium.excitement = Math.max(this.world.stadium.excitement, 0.5);
     });
     m.events.on('net', (e) => this.sfx.play('net', e.speed / 8));
+    m.events.on('splash', (e) => {
+      const strength = Math.min(1.3, e.speed / 8);
+      this.world.weather.burst(e.pos, strength);
+      this.recorder.splashes.push({ pos: e.pos.clone(), strength, t: m.time });
+      this.sfx.play('splash', strength);
+    });
     m.events.on('touch', (e) => {
       if (e.kind === 'save' || e.kind === 'block') this.sfx.play('bounce', 0.8);
     });
     m.events.on('outcome', (o) => {
       if (this.demo) return;
-      if (o.goal) {
+      if (o.goal && this.session?.counts(o, this.shot!)) {
         this.sfx.play('cheer');
         this.world.stadium.excitement = 1;
       } else this.sfx.play('groan');
@@ -205,6 +219,14 @@ export class Game {
     }
 
     if (this.state === 'menu') return this.updateDemo(dt);
+
+    const sess = this.session!;
+    if (sess.timed && (this.state === 'aim' || this.state === 'kick')) {
+      sess.tick(dt);
+      this.hud.setClock(sess.timeLeft);
+      // Out of time while lining up a kick: game over. A kick already struck still counts.
+      if (this.state === 'aim' && sess.gameOver) return this.endGame();
+    }
 
     if (this.state === 'aim') {
       const speed = this.session!.current.barSpeed;
@@ -242,22 +264,27 @@ export class Game {
     this.acc += dt;
     while (this.acc >= SIM_DT) {
       m.step(SIM_DT);
-      if (this.stepCount++ % 2 === 0) this.recorder.capture(m);
+      if (this.stepCount++ % 2 === 0) this.recorder.capture(m, this.world.stadium.excitement);
       this.acc -= SIM_DT;
     }
   }
 
   private showResult(r: KickResult) {
     const o = r.outcome;
-    this.hud.setBars(this.locked.map((v, i) => (i === 2 ? v : v)), -1, false);
+    this.hud.setBars(this.locked, -1, false);
     if (o.goal && r.points) {
       const p = r.points;
       const sub = o.rebound
         ? `Rebound saves the life · +${p.total}`
-        : `${p.zoneName} ${p.zone}${p.swerve ? ` + swerve ${p.swerve}` : ''} × ${p.multiplier.toFixed(2)} = <b>${p.total}</b>`;
+        : `${p.zoneName} ${p.zone}${p.swerve ? ` + swerve ${p.swerve}` : ''}${p.target ? ` + target ${p.target}` : ''} × ${p.multiplier.toFixed(2)} = <b>${p.total}</b>`;
       this.hud.message(o.message, sub, 'goal');
     } else {
-      const sub = r.gameOver ? 'No lives left' : `${r.livesAfter} ${r.livesAfter === 1 ? 'life' : 'lives'} left`;
+      const s = this.session!;
+      const sub = s.timed
+        ? r.gameOver ? 'Time up!' : 'Retake the kick'
+        : o.kind === 'nobend' && !r.gameOver
+          ? `Bend it more than ${Math.round((s.mode.minSwerve ?? 0) * 100)}% · ${r.livesAfter} ${r.livesAfter === 1 ? 'life' : 'lives'} left`
+          : r.gameOver ? 'No lives left' : `${r.livesAfter} ${r.livesAfter === 1 ? 'life' : 'lives'} left`;
       this.hud.message(o.message, sub, 'miss');
     }
     this.updateInfo();
@@ -270,7 +297,7 @@ export class Game {
     this.replayPass = 0;
     // Each kick can have a different number of players (wall size), so don't reuse the buffer.
     this.replayState = undefined;
-    this.replayAngles = ['behind-goal', this.rng.pick(REPLAY_EXTRA)];
+    this.replayAngles = this.session!.mode.replay === 'short' ? ['behind-goal'] : ['behind-goal', this.rng.pick(REPLAY_EXTRA)];
     this.beginReplayPass();
   }
 
@@ -294,7 +321,17 @@ export class Game {
 
   private updateReplay(dt: number) {
     const m = this.match!;
+    const prevT = this.replayT;
     this.replayT += dt * this.replaySpeed;
+    // Re-live the roar at the moment the ball goes in.
+    const o = m.outcome;
+    if (o?.goal && prevT < o.time && this.replayT >= o.time) this.sfx.play('cheer');
+    for (const sp of this.recorder.splashes) {
+      if (prevT < sp.t && this.replayT >= sp.t) {
+        this.world.weather.burst(sp.pos, sp.strength);
+        this.sfx.play('splash', sp.strength);
+      }
+    }
     const end = Math.min(this.recorder.end, (m.outcome?.time ?? this.recorder.end) + 1.2);
     if (this.replayT > end) {
       this.replayPass++;
@@ -302,7 +339,7 @@ export class Game {
       this.beginReplayPass();
     }
     this.replayState = this.recorder.sample(this.replayT, this.replayState);
-    this.world.renderReplay(this.replayState, this.replayT, m.people.indexOf(m.keeper), dt);
+    this.world.renderReplay(this.replayState, this.replayT, m.people.indexOf(m.keeper), dt, m.targetHit);
   }
 
   private endReplay() {
@@ -312,14 +349,15 @@ export class Game {
   }
 
   private afterReplay() {
-    const s = this.session!;
-    if (s.gameOver) {
-      this.state = 'gameover';
-      this.hud.show(false);
-      this.menus.gameOver(s.mode, s.score, s.stage, s.goals, this.home.name, s.history, () => this.showMenu());
-      return;
-    }
+    if (this.session!.gameOver) return this.endGame();
     this.nextKick();
+  }
+
+  private endGame() {
+    const s = this.session!;
+    this.state = 'gameover';
+    this.hud.show(false);
+    this.menus.gameOver(s.mode, s.score, s.stage, s.goals, this.home.name, s.history, () => this.showMenu());
   }
 
   // ------------------------------------------------------------------ attract mode

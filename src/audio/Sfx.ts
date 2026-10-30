@@ -1,6 +1,6 @@
 import type { Manifest } from '../assets/manifest';
 
-export type SfxName = 'kick' | 'whistle' | 'post' | 'net' | 'bounce' | 'cheer' | 'groan' | 'crowd';
+export type SfxName = 'kick' | 'whistle' | 'post' | 'net' | 'bounce' | 'cheer' | 'groan' | 'crowd' | 'splash';
 
 /**
  * Placeholder sound effects synthesised with WebAudio. Any sound named in manifest.audio with a
@@ -75,6 +75,10 @@ export class Sfx {
       case 'post':
         for (const [f, a] of [[880, 0.35], [1320, 0.2], [2210, 0.12]] as const) this.tone(t, f, 0.9, a * intensity, 'sine');
         this.thump(t, 140, 0.1, 0.5);
+        break;
+      case 'splash':
+        this.noise(t, 0.25, 700, 0.45 * Math.min(1, intensity), 'lowpass');
+        this.noise(t + 0.02, 0.18, 3200, 0.18 * Math.min(1, intensity));
         break;
       case 'net':
         this.noise(t, 0.35, 900, 0.35 * Math.min(1, intensity), 'lowpass');

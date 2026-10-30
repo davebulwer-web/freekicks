@@ -43,18 +43,20 @@ export class Menus {
     const home = Teams.get(sel.home), away = Teams.get(sel.away);
     const preview = el('div.title-kits', {}, [this.kitCanvas(home.kit, 1), el('div.vs', { text: 'v' }), this.kitCanvas(away.kit, 7)]);
     this.screen(
-      el('h1.title', { html: 'FREE <span>KICKS</span>' }),
-      el('div.subtitle', { text: `${home.name} v ${away.name}` }),
-      preview,
-      el('div.menu-buttons', {}, [
-        ...MODES.map((m) =>
-          el('button.btn.big', { onclick: () => this.onPlay(m) }, [el('div', { text: m.name }), el('small', { text: m.description })]),
-        ),
-        el('div.row', {}, [
-          el('button.btn', { text: 'TEAMS & KITS', onclick: () => this.teams() }),
-          el('button.btn', { text: 'HIGH SCORES', onclick: () => this.highScores(MODES[0].id) }),
-          el('button.btn', { text: 'SETTINGS', onclick: () => this.settingsScreen() }),
+      el('div.main-menu', {}, [
+        el('div.main-left', {}, [
+          el('h1.title', { html: 'FREE <span>KICKS</span>' }),
+          el('div.subtitle', { text: `${home.name} v ${away.name}` }),
+          preview,
+          el('div.side-buttons', {}, [
+            el('button.btn.small', { text: 'TEAMS & KITS', onclick: () => this.teams() }),
+            el('button.btn.small', { text: 'HIGH SCORES', onclick: () => this.highScores(MODES[0].id) }),
+            el('button.btn.small', { text: 'SETTINGS', onclick: () => this.settingsScreen() }),
+          ]),
         ]),
+        el('div.mode-grid', {}, MODES.map((m) =>
+          el(`button.mode-card.mode-${m.id}`, { onclick: () => this.onPlay(m) }, [el('div.mode-name', { text: m.name }), el('small', { text: m.description })]),
+        )),
       ]),
     );
   }

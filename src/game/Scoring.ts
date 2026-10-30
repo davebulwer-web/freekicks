@@ -1,5 +1,6 @@
 import { HALF_GOAL, PITCH, RULES } from '../config/rules';
-import type { StageSetup } from '../config/types';
+import { targetAt } from '../config/stages';
+import type { ModeConfig, StageSetup } from '../config/types';
 import type { Outcome } from '../sim/Match';
 import type { ShotInput } from '../sim/Kick';
 
@@ -14,6 +15,8 @@ export interface ScoreBreakdown {
   zone: number;
   zoneName: string;
   swerve: number;
+  /** Target Challenge bonus (0 if no board was hit). */
+  target: number;
   multiplier: number;
   total: number;
 }
@@ -32,16 +35,17 @@ export function difficulty(setup: StageSetup): number {
   return 1 + Math.max(0, dist - 18) / 18 + angle * 0.6 + (setup.wallSize - 3) * 0.06 + setup.keeperSkill * 0.4;
 }
 
-export function scoreGoal(outcome: Outcome, shot: ShotInput, setup: StageSetup, modeMultiplier = 1): ScoreBreakdown {
+export function scoreGoal(outcome: Outcome, shot: ShotInput, setup: StageSetup, mode: Partial<ModeConfig> = {}): ScoreBreakdown {
   if (outcome.rebound) {
-    return { zone: 0, zoneName: 'Rebound', swerve: 0, multiplier: 1, total: RULES.reboundGoalPoints };
+    return { zone: 0, zoneName: 'Rebound', swerve: 0, target: 0, multiplier: 1, total: RULES.reboundGoalPoints };
   }
   const c = outcome.crossing ?? { x: 0, y: 1 };
   const z = zoneFor(c.x, c.y);
   const zone = ZONE_POINTS[z.row][z.col];
-  const swerve = Math.round(Math.abs(shot.swerve) * 200);
-  const multiplier = difficulty(setup) * modeMultiplier;
-  const total = Math.round(((zone + swerve) * multiplier) / 10) * 10;
+  const swerve = Math.round(Math.abs(shot.swerve) * 200 * (mode.swerveBonusMultiplier ?? 1));
+  const target = targetAt(setup.targets, c.x, c.y) >= 0 ? (mode.targets?.bonus ?? 1000) : 0;
+  const multiplier = difficulty(setup) * (mode.scoreMultiplier ?? 1);
+  const total = Math.round(((zone + swerve + target) * multiplier) / 10) * 10;
   const zoneName = z.col === 'side' ? (z.row === 'top' ? 'Top corner' : z.row === 'bottom' ? 'Bottom corner' : 'Inside the post') : z.row === 'top' ? 'Under the bar' : z.row === 'bottom' ? 'Low and central' : 'Straight down the middle';
-  return { zone, zoneName, swerve, multiplier, total };
+  return { zone, zoneName, swerve, target, multiplier, total };
 }

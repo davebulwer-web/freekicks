@@ -1,4 +1,5 @@
 import { Quaternion, Vector3 } from 'three';
+import { PUDDLE_THRESHOLD } from '../config/surface';
 import type { WeatherKind } from '../config/types';
 
 export const BALL_RADIUS = 0.11;
@@ -28,7 +29,12 @@ export const SURFACES: Record<WeatherKind, Surface> = {
 export interface BallEnv {
   wind: Vector3;
   surface: Surface;
+  /** Standing water depth 0..1 at a pitch position (wet weather only). */
+  puddleAt?: (x: number, z: number) => number;
 }
+
+/** Extra deceleration (m/s^2) per unit of water depth while rolling through a puddle. */
+const PUDDLE_DRAG = 7;
 
 const tmpRel = new Vector3();
 const tmpMag = new Vector3();
@@ -71,12 +77,15 @@ export class Ball {
     pos.addScaledVector(vel, dt);
     spin.multiplyScalar(Math.exp(-(airborne ? 0.12 : 1.5) * dt));
 
+    const water = env.puddleAt && pos.y < BALL_RADIUS + 0.05 ? env.puddleAt(pos.x, pos.z) : 0;
+    const wet = water > PUDDLE_THRESHOLD ? water : 0;
     if (pos.y < BALL_RADIUS) {
       pos.y = BALL_RADIUS;
       if (vel.y < -0.6) {
-        vel.y = -vel.y * env.surface.restitution;
-        vel.x *= env.surface.bounceFriction;
-        vel.z *= env.surface.bounceFriction;
+        // A puddle soaks up the bounce and grabs the ball.
+        vel.y = -vel.y * env.surface.restitution * (1 - 0.55 * wet);
+        vel.x *= env.surface.bounceFriction * (1 - 0.3 * wet);
+        vel.z *= env.surface.bounceFriction * (1 - 0.3 * wet);
         spin.multiplyScalar(0.6);
         bounced = true;
       } else {
@@ -88,7 +97,7 @@ export class Ball {
     if (this.onGround) {
       const h = Math.hypot(vel.x, vel.z);
       if (h > 0) {
-        const dec = env.surface.rollMu * GRAVITY * dt;
+        const dec = (env.surface.rollMu * GRAVITY + PUDDLE_DRAG * wet) * dt;
         const k = Math.max(0, h - dec) / h;
         vel.x *= k;
         vel.z *= k;
