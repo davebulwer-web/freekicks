@@ -1,6 +1,6 @@
 import type { CharacterSet, Manifest } from '../assets/manifest';
 import { Rng } from '../core/Rng';
-import { DEFAULT_PALETTE, poseFor, renderFrame, type Palette, type Pose } from './figure';
+import { DEFAULT_PALETTE, fitPose, poseFor, renderFrame, type Palette, type Pose } from './figure';
 
 /**
  * Procedural placeholder art. Each generator returns a canvas for one manifest path.
@@ -32,7 +32,10 @@ export function generateCharacterSheets(set: CharacterSet, kind: 'people' | 'cam
     for (const [anim, def] of Object.entries(set.anims)) {
       if (def.sheet !== sheetName) continue;
       for (let f = 0; f < def.count; f++) {
-        const pose = kind === 'cameraman' ? cameramanPose(f) : poseFor(anim, f, def.count);
+        const raw = kind === 'cameraman' ? cameramanPose(f) : poseFor(anim, f, def.count);
+        // Keep 2 px clear of the frame edges (1 px outline + margin).
+        const ppm = set.pixelsPerMetre;
+        const pose = fitPose(raw, (sheet.frameW / 2 - 2) / ppm, (sheet.frameH - set.footY - 2) / ppm, set.directions);
         for (let row = 0; row < sheet.rows; row++) {
           renderFrame(
             {
@@ -57,21 +60,21 @@ export function generateCharacterSheets(set: CharacterSet, kind: 'people' | 'cam
   return out;
 }
 
-function cameramanPose(frame: number): Pose {
+export function cameramanPose(frame: number): Pose {
   const pan = frame ? 0.04 : 0;
   return {
     lean: 0.12,
-    armL: { swing: 1.2, bend: 0.9, spread: -0.1 },
-    armR: { swing: 1.45, bend: 0.5, spread: 0.05 },
+    armL: { swing: 0.45, bend: 1.55, spread: -0.1 },
+    armR: { swing: 0.55, bend: 1.4, spread: 0.05 },
     legL: { swing: 0.15, bend: 0.1, spread: 0.12 },
     legR: { swing: -0.1, bend: 0.1, spread: 0.12 },
     extras: [
-      { a: [-0.08 + pan, 1.6, 0.12], b: [-0.08 + pan, 1.62, 0.5], r: 0.1, region: 'dark' },
-      { a: [-0.08 + pan, 1.62, 0.5], b: [-0.08 + pan, 1.62, 0.62], r: 0.06, region: 'metal' },
-      { a: [-0.08, 1.45, 0.3], b: [-0.08, 1.45, 0.3], r: 0.04, region: 'metal' },
-      { a: [-0.08, 1.45, 0.3], b: [-0.3, 0, 0.45], r: 0.015, region: 'metal' },
-      { a: [-0.08, 1.45, 0.3], b: [0.15, 0, 0.45], r: 0.015, region: 'metal' },
-      { a: [-0.08, 1.45, 0.3], b: [-0.08, 0, 0.05], r: 0.015, region: 'metal' },
+      { a: [-0.08 + pan, 1.6, 0.04], b: [-0.08 + pan, 1.62, 0.3], r: 0.09, region: 'dark' },
+      { a: [-0.08 + pan, 1.62, 0.3], b: [-0.08 + pan, 1.62, 0.37], r: 0.05, region: 'metal' },
+      { a: [-0.08, 1.45, 0.2], b: [-0.08, 1.45, 0.2], r: 0.04, region: 'metal' },
+      { a: [-0.08, 1.45, 0.2], b: [-0.24, 0, 0.26], r: 0.015, region: 'metal' },
+      { a: [-0.08, 1.45, 0.2], b: [0.1, 0, 0.26], r: 0.015, region: 'metal' },
+      { a: [-0.08, 1.45, 0.2], b: [-0.08, 0, -0.05], r: 0.015, region: 'metal' },
     ],
   };
 }
@@ -94,6 +97,7 @@ export function generateCrowd(m: Manifest['crowd']): HTMLCanvasElement {
     for (let f = 0; f < m.frames; f++) {
       const up = f === 1;
       const pose: Pose = {
+        ground: false,
         lean: up ? -0.05 : 0.05,
         armL: up ? { swing: 2.8, bend: 0.2, spread: 0.4 } : { swing: 0.4, bend: 0.9, spread: 0.1 },
         armR: up ? { swing: 2.6, bend: 0.3, spread: 0.4 } : { swing: 0.3, bend: 1.0, spread: 0.1 },

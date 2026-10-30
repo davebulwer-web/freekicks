@@ -23,6 +23,19 @@ Characters are camera-facing **billboard sprites** drawn from 8 directions. Each
 
 The game uses the uv layer to paint **stripes, hoops, halves and sashes** in any colours. You only draw one set of sprites, and every team kit is generated from it. Treat the uv layer as "where on the shirt is this pixel". The placeholder generator shows how it should look: a smooth gradient around the torso, and sleeves that take the value of the side they're on.
 
+### Kit detail in the base layer
+
+The default sprites are rendered by `src/placeholders/figure.ts`, a small signed-distance-field renderer with an athletic body model. Fabric detail is baked into the **grey values only**, so it survives any kit colour:
+
+- shirt: drag folds from the armpits, waist folds, side seams, a V-neck with a ribbed collar, sleeve cuffs and a hem band;
+- shorts: waistband, side seam, hem and folds;
+- socks: ribbing and a turnover below the knee;
+- boots (not recoloured): sole, laces and a side stripe.
+
+Keep painted replacements to the same rule: shading in kit areas must be neutral grey (R = G = B), with 204 meaning the kit colour at full strength.
+
+Every pose is automatically fitted inside its frame. The limb motion is scaled the same amount in all 8 directions, so nothing is clipped and the character centre never moves. Feet sit on the ground line in every grounded frame. The two exceptions are the airborne jump frame and the kick follow-through hop, which is about 5 px off the ground on purpose.
+
 ### Sheet layout
 
 - **Frame size:** 128 × 256 px for `main` and 320 × 256 px for `dive` (keeper dives are wide). You can change frame sizes in the manifest.
