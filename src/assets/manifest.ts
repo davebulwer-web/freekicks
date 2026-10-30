@@ -95,6 +95,10 @@ export const DEFAULT_MANIFEST: Manifest = {
     'hoardings/hoarding_04.png',
     'hoardings/hoarding_05.png',
     'hoardings/hoarding_06.png',
+    'hoardings/hoarding_07.png',
+    'hoardings/hoarding_08.png',
+    'hoardings/hoarding_09.png',
+    'hoardings/hoarding_10.png',
   ],
   models: {},
   audio: {
