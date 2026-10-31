@@ -19,6 +19,8 @@ A free-kick arcade game for Android in the style of *Roberto Baggio's Magical Ki
 - **Stadium dressing:** hoardings, stands with an animated crowd, cameramen, dugouts, corner flags and optional glTF models, all data-driven.
 - Local top-10 high scores per mode, and placeholder synthesised sound effects.
 
+> This repo also contains **[Angry Andy Gets The Gig](angry-andy/README.md)**, a separate small browser game in `angry-andy/`.
+
 All art is **placeholder** and designed to be replaced. See [ASSETS.md](ASSETS.md).
 
 ## Run it

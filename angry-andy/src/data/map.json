@@ -1,0 +1,470 @@
+{
+ "tileSize": 16,
+ "width": 40,
+ "height": 24,
+ "legend": {
+  "#": "wall",
+  ".": "floor",
+  "o": "pavement",
+  "b": "bay",
+  "=": "road",
+  "\"": "grass"
+ },
+ "rows": [
+  "########################################",
+  "#............#.......#....#............#",
+  "#............#.......#....#............#",
+  "#............#.......##.###............#",
+  "#......................................#",
+  "#......................................#",
+  "#............#........#######.###..#####",
+  "#............#........#...#.....#......#",
+  "#............#........#...#.....#......#",
+  "#............#........#...#######......#",
+  "#............#........#...#.....#......#",
+  "#............#........#...#.....#......#",
+  "#............#........##.####.###......#",
+  "#............#............#............#",
+  "#............#............#.....#......#",
+  "#######################..####..#########",
+  "oooooooooooooooooooooooooooooooooooooooo",
+  "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "========================================",
+  "========================================",
+  "========================================",
+  "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\""
+ ],
+ "rooms": [
+  {
+   "id": "finance",
+   "name": "Finance",
+   "x0": 1,
+   "y0": 1,
+   "x1": 12,
+   "y1": 14,
+   "floor": "carpet_blue"
+  },
+  {
+   "id": "middle",
+   "name": "Middle Office",
+   "x0": 14,
+   "y0": 1,
+   "x1": 25,
+   "y1": 14,
+   "floor": "carpet_grey"
+  },
+  {
+   "id": "kitchen",
+   "name": "Kitchen",
+   "x0": 22,
+   "y0": 1,
+   "x1": 25,
+   "y1": 2,
+   "floor": "lino"
+  },
+  {
+   "id": "stairs",
+   "name": "Stairs",
+   "x0": 23,
+   "y0": 7,
+   "x1": 25,
+   "y1": 11,
+   "floor": "stairs"
+  },
+  {
+   "id": "server",
+   "name": "Server Room",
+   "x0": 27,
+   "y0": 1,
+   "x1": 38,
+   "y1": 5,
+   "floor": "server"
+  },
+  {
+   "id": "shower",
+   "name": "Shower",
+   "x0": 27,
+   "y0": 7,
+   "x1": 31,
+   "y1": 8,
+   "floor": "tile_blue"
+  },
+  {
+   "id": "toilet",
+   "name": "Toilet",
+   "x0": 27,
+   "y0": 10,
+   "x1": 31,
+   "y1": 11,
+   "floor": "tile_white"
+  },
+  {
+   "id": "corridor",
+   "name": "Corridor",
+   "x0": 27,
+   "y0": 13,
+   "x1": 31,
+   "y1": 14,
+   "floor": "lino"
+  },
+  {
+   "id": "it",
+   "name": "IT Office",
+   "x0": 33,
+   "y0": 7,
+   "x1": 38,
+   "y1": 14,
+   "floor": "carpet_green"
+  },
+  {
+   "id": "carpark",
+   "name": "Car Park",
+   "x0": 0,
+   "y0": 16,
+   "x1": 39,
+   "y1": 23,
+   "floor": "tarmac"
+  }
+ ],
+ "desks": [
+  {
+   "id": "fin1",
+   "x": 2,
+   "y": 2
+  },
+  {
+   "id": "fin2",
+   "x": 7,
+   "y": 2
+  },
+  {
+   "id": "fin3",
+   "x": 2,
+   "y": 7
+  },
+  {
+   "id": "fin4",
+   "x": 7,
+   "y": 7
+  },
+  {
+   "id": "fin5",
+   "x": 2,
+   "y": 11
+  },
+  {
+   "id": "mid1",
+   "x": 15,
+   "y": 2
+  },
+  {
+   "id": "mid2",
+   "x": 18,
+   "y": 2
+  },
+  {
+   "id": "mid3",
+   "x": 15,
+   "y": 8
+  },
+  {
+   "id": "mid4",
+   "x": 18,
+   "y": 8
+  },
+  {
+   "id": "mid5",
+   "x": 15,
+   "y": 11
+  },
+  {
+   "id": "it1",
+   "x": 33,
+   "y": 8
+  },
+  {
+   "id": "it2",
+   "x": 36,
+   "y": 8
+  },
+  {
+   "id": "it3",
+   "x": 33,
+   "y": 11
+  },
+  {
+   "id": "andy",
+   "x": 36,
+   "y": 11
+  }
+ ],
+ "objects": [
+  {
+   "type": "printer",
+   "x": 10,
+   "y": 13,
+   "solid": true
+  },
+  {
+   "type": "plant",
+   "x": 12,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "filing",
+   "x": 11,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "filing",
+   "x": 1,
+   "y": 14,
+   "solid": true
+  },
+  {
+   "type": "plant",
+   "x": 1,
+   "y": 5,
+   "solid": true
+  },
+  {
+   "type": "cooler",
+   "x": 20,
+   "y": 13,
+   "solid": true
+  },
+  {
+   "type": "plant",
+   "x": 14,
+   "y": 14,
+   "solid": true
+  },
+  {
+   "type": "printer",
+   "x": 20,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "counter",
+   "x": 22,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "kettle",
+   "x": 23,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "counter",
+   "x": 24,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "fridge",
+   "x": 25,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "stairs_up",
+   "x": 23,
+   "y": 7,
+   "solid": false
+  },
+  {
+   "type": "rack",
+   "x": 28,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "rack",
+   "x": 30,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "rack",
+   "x": 32,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "rack",
+   "x": 34,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "rack",
+   "x": 36,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "rack",
+   "x": 38,
+   "y": 1,
+   "solid": true
+  },
+  {
+   "type": "beanbag",
+   "x": 37,
+   "y": 4,
+   "solid": false
+  },
+  {
+   "type": "shower",
+   "x": 30,
+   "y": 7,
+   "solid": false
+  },
+  {
+   "type": "toilet",
+   "x": 28,
+   "y": 10,
+   "solid": true
+  },
+  {
+   "type": "sink",
+   "x": 31,
+   "y": 10,
+   "solid": true
+  },
+  {
+   "type": "plant",
+   "x": 38,
+   "y": 14,
+   "solid": true
+  },
+  {
+   "type": "bin",
+   "x": 33,
+   "y": 14,
+   "solid": true
+  },
+  {
+   "type": "whiteboard",
+   "x": 37,
+   "y": 7,
+   "solid": true
+  }
+ ],
+ "bays": [
+  {
+   "id": "bay1",
+   "x": 1,
+   "y": 17
+  },
+  {
+   "id": "bay2",
+   "x": 4,
+   "y": 17
+  },
+  {
+   "id": "bay3",
+   "x": 7,
+   "y": 17
+  },
+  {
+   "id": "bay4",
+   "x": 10,
+   "y": 17
+  },
+  {
+   "id": "bay5",
+   "x": 13,
+   "y": 17
+  },
+  {
+   "id": "bay6",
+   "x": 16,
+   "y": 17
+  },
+  {
+   "id": "bay7",
+   "x": 33,
+   "y": 17
+  },
+  {
+   "id": "bay8",
+   "x": 36,
+   "y": 17
+  }
+ ],
+ "points": {
+  "kettle": [
+   23.5,
+   2.5
+  ],
+  "toilet": [
+   28.5,
+   11.2
+  ],
+  "toiletDoor": [
+   29.5,
+   13.3
+  ],
+  "stairs": [
+   24.5,
+   11.0
+  ],
+  "showerDoor": [
+   29.5,
+   7.4
+  ],
+  "printerFinance": [
+   10.5,
+   12.6
+  ],
+  "printerMiddle": [
+   20.5,
+   2.6
+  ],
+  "cooler": [
+   20.5,
+   12.7
+  ],
+  "serverLounge": [
+   37.5,
+   4.8
+  ],
+  "itChat": [
+   35.5,
+   13.6
+  ],
+  "kitchenChat": [
+   22.8,
+   2.6
+  ],
+  "backDoor": [
+   29.5,
+   16.5
+  ],
+  "frontDoor": [
+   23.5,
+   16.5
+  ],
+  "carEntryLeft": [
+   -2,
+   21.5
+  ],
+  "carExitRight": [
+   42,
+   21.5
+  ],
+  "outsideLeft": [
+   0.5,
+   16.5
+  ]
+ },
+ "andyStart": "andy"
+}

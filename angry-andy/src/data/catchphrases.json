@@ -1,0 +1,24 @@
+{
+  "_comment": "Andy's catchphrases, rotated with no immediate repeats. Add as many as you like. 'boss' lines are what the boss says upstairs; 'grumbles' play when a task is missed; 'excuses' are what people say when Andy has a go at them.",
+  "catchphrases": [
+    "You don't get the gig!",
+    "Worse than my ex-wife.",
+    "A problem, but not my problem.",
+    "For goodness sake...",
+    "Have you tried turning it off and leaving?",
+    "Not on my watch.",
+    "I've got a ticket for that. It's called NO.",
+    "Do I look like a help desk?",
+    "Thirty years I've been doing this."
+  ],
+  "grumbles": ["Grrr...", "Oh, marvellous.", "Typical.", "Brilliant. Just brilliant.", "Why me?"],
+  "excuses": ["Sorry Andy!", "It wasn't me!", "Alright, alright!", "I was just leaving!", "Keep your hair on!"],
+  "boss": [
+    "Can you make the internet faster?",
+    "Why does the printer hate me?",
+    "I need IT to be more... synergistic.",
+    "My nephew says we should use the cloud.",
+    "Budget's frozen. Do more with less.",
+    "Can you fix my phone? It's personal."
+  ]
+}
