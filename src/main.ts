@@ -35,7 +35,7 @@ async function boot() {
   requestAnimationFrame(frame);
 }
 
-/** Tap = stop a bar; drag = orbit the camera; two-finger pinch = zoom. */
+/** Tap = lock a ring segment; drag = orbit the camera; two-finger pinch = zoom. */
 function bindInput(target: HTMLElement, game: Game) {
   const pointers = new Map<number, { x: number; y: number; sx: number; sy: number; t: number }>();
   let pinchDist = 0;

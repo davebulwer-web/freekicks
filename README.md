@@ -2,7 +2,7 @@
 
 A free-kick arcade game for Android in the style of *Roberto Baggio's Magical Kicks*, built with **TypeScript + Three.js** and wrapped as an Android app with **Capacitor**.
 
-- Set **height**, **direction** and **swerve** with three oscillating bars. Tap to stop each one, then the kicker runs up and strikes.
+- Set **height**, **direction**, **swerve** and **dip** on a glowing ring around the ball. A marker sweeps along each segment in turn; tap to lock it. Dip runs from float (backspin) through none to heavy dip (topspin). After the fourth tap the kicker runs up and strikes.
 - **3 lives.** A goal refills your lives, scores points and moves you on to a harder free kick. A miss costs a life and you retake the same kick. Losing all three is game over.
 - **Points:** target zone (the top corners score most), plus a swerve bonus, times a difficulty multiplier (distance, angle, wall size, keeper quality). A rebound goal saves the life and scores a flat 100.
 - **Live play** after the kick: the ball comes off posts, crossbar, net, wall and keeper. The keeper catches or parries, defenders clear, and attackers follow in for an automatic rebound shot. The ball going out of play counts as a miss.
@@ -31,7 +31,7 @@ npm install
 npm run dev
 ```
 
-Open the printed URL in a browser (use landscape on a phone). On a computer, click (or press Space) to stop the bars and drag to rotate the camera.
+Open the printed URL in a browser (use landscape on a phone). On a computer, click (or press Space) to lock each ring segment and drag to rotate the camera.
 
 ```bash
 npm test
@@ -59,7 +59,7 @@ The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. You c
 
 | Path | What |
 |---|---|
-| `src/sim/` | Renderer-independent simulation: `Match.ts` (run-up, ball, keeper/wall/defender/attacker AI, outcomes), `Kick.ts` (bar values → velocity and spin) |
+| `src/sim/` | Renderer-independent simulation: `Match.ts` (run-up, ball, keeper/wall/defender/attacker AI, outcomes), `Kick.ts` (ring values → velocity and spin) |
 | `src/physics/` | Ball flight (drag, Magnus curl, wind, bounce, roll) and goal frame/net collisions |
 | `src/game/` | `Game.ts` (flow and state machine), `Session.ts` (lives, stages, score), `Scoring.ts`, teams, high scores |
 | `src/config/` | Pitch dimensions, rules, modes, preset teams, stage generator |

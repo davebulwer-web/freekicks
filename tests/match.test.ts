@@ -39,7 +39,7 @@ describe('match', () => {
 
   it('a shot far wide is a miss and every kick resolves', () => {
     const m = new Match(makeStage(1, arcade, 5));
-    m.takeKick({ height: 0.1, direction: 0, swerve: -1 });
+    m.takeKick({ height: 0.1, direction: 0, swerve: -1, dip: 0 });
     const o = run(m);
     expect(o.goal).toBe(false);
     expect(m.finished).toBe(true);
@@ -50,7 +50,7 @@ describe('match', () => {
     for (const d of [0.2, 0.3, 0.4, 0.6, 0.7, 0.8])
       for (const s of [-1, -0.5, 0, 0.5, 1]) {
         const m = new Match(makeStage(1, arcade, 1234));
-        m.takeKick({ height: 0.72, direction: d, swerve: s });
+        m.takeKick({ height: 0.72, direction: d, swerve: s, dip: 0.6 });
         if (run(m).goal) goals++;
       }
     expect(goals).toBeGreaterThan(3);

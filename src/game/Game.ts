@@ -8,7 +8,7 @@ import { World } from '../render/World';
 import { Recorder, type ReplayState } from '../replay/Recorder';
 import type { ShotInput } from '../sim/Kick';
 import { Match, SIM_DT } from '../sim/Match';
-import { Hud } from '../ui/Hud';
+import { GAUGE_NAMES, Hud } from '../ui/Hud';
 import { Menus, type Settings } from '../ui/Menus';
 import { Session, type KickResult } from './Session';
 import { Teams } from './Teams';
@@ -17,8 +17,8 @@ type State = 'menu' | 'aim' | 'kick' | 'result' | 'replay' | 'gameover' | 'pause
 
 const REPLAY_EXTRA: ReplayAngle[] = ['side', 'keeper', 'kicker', 'aerial'];
 
-/** Oscillating tap-to-stop bar: triangle wave 0..1. */
-class Bar {
+/** Oscillating tap-to-stop gauge (one ring segment): triangle wave 0..1. */
+class Gauge {
   t = Math.random();
   value = 0;
   update(dt: number, speed: number) {
@@ -38,9 +38,9 @@ export class Game {
   private session: Session | null = null;
   private match: Match | null = null;
   private recorder = new Recorder();
-  private bars = [new Bar(), new Bar(), new Bar()];
-  private barIndex = 0;
-  private locked: number[] = [0.5, 0.5, 0.5];
+  private gauges = [new Gauge(), new Gauge(), new Gauge(), new Gauge()];
+  private gaugeIndex = 0;
+  private locked: number[] = [0.5, 0.5, 0.5, 0.5];
   private shot: ShotInput | null = null;
   private acc = 0;
   private stepCount = 0;
@@ -127,12 +127,12 @@ export class Game {
     this.newMatch(s);
     this.state = 'aim';
     this.stateTime = 0;
-    this.barIndex = 0;
-    this.locked = [0.5, 0.5, 0.5];
-    this.bars.forEach((b) => (b.t = this.rng.range(0, 2)));
+    this.gaugeIndex = 0;
+    this.locked = [0.5, 0.5, 0.5, 0.5];
+    this.gauges.forEach((g) => (g.t = this.rng.range(0, 2)));
     this.hud.message('');
     this.hud.showReplay(false);
-    this.hud.setHint('Tap to stop the HEIGHT bar');
+    this.hud.setHint('Tap to set HEIGHT');
     this.updateInfo();
     this.sfx.play('whistle');
   }
@@ -144,19 +144,31 @@ export class Game {
     if (s.timed) this.hud.setClock(s.timeLeft);
   }
 
+  /** Current shot-ring state (also read by tests and the playtest tool). */
+  get aim(): { active: number; values: number[] } {
+    const values = this.gauges.map((g, i) => (i < this.gaugeIndex ? this.locked[i] : i === this.gaugeIndex ? g.value : 0.5));
+    return { active: this.gaugeIndex, values };
+  }
+
+  /** Bending Masterclass: the Swerve segment's dead zone (as 0..1 along the segment). */
+  private deadZone(): [number, number] {
+    const dz = this.session?.mode.minSwerve ?? 0;
+    return dz > 0 ? [0.5 - dz / 2, 0.5 + dz / 2] : [0, 0];
+  }
+
   /** A short tap anywhere on the pitch. */
   tap() {
     this.sfx.unlock();
     if (this.state !== 'aim' || !this.match) return;
-    this.locked[this.barIndex] = this.bars[this.barIndex].value;
-    this.barIndex++;
-    if (this.barIndex < 3) {
-      this.hud.setHint(`Tap to stop the ${['HEIGHT', 'DIRECTION', 'SWERVE'][this.barIndex]} bar`);
+    this.locked[this.gaugeIndex] = this.gauges[this.gaugeIndex].value;
+    this.gaugeIndex++;
+    if (this.gaugeIndex < GAUGE_NAMES.length) {
+      this.hud.setHint(`Tap to set ${GAUGE_NAMES[this.gaugeIndex]}`);
       return;
     }
-    this.shot = { height: this.locked[0], direction: this.locked[1], swerve: this.locked[2] * 2 - 1 };
+    this.shot = { height: this.locked[0], direction: this.locked[1], swerve: this.locked[2] * 2 - 1, dip: this.locked[3] * 2 - 1 };
     this.hud.setHint('');
-    this.match.takeKick(this.shot);
+    this.match.takeKick(this.shot!);
     this.state = 'kick';
     this.stateTime = 0;
   }
@@ -230,10 +242,12 @@ export class Game {
 
     if (this.state === 'aim') {
       const speed = this.session!.current.barSpeed;
-      this.bars[this.barIndex]?.update(dt, speed * (this.barIndex === 2 ? 1.15 : 1));
-      const vals = this.bars.map((b, i) => (i < this.barIndex ? this.locked[i] : i === this.barIndex ? b.value : 0.5));
-      this.hud.setBars(vals, this.barIndex, true);
+      this.gauges[this.gaugeIndex]?.update(dt, speed * (this.gaugeIndex >= 2 ? 1.15 : 1));
     }
+    // The ring stays up, showing every locked value, until the kick is struck.
+    const showRing = this.state === 'aim' || (this.state === 'kick' && m.phase === 'runup');
+    this.world.ring.update(dt, showRing, this.gaugeIndex, this.aim.values, this.deadZone());
+    this.hud.setGauges(this.aim.values, this.gaugeIndex, showRing);
 
     if (this.state === 'kick' || this.state === 'result') this.stepSim(dt);
 
@@ -271,7 +285,7 @@ export class Game {
 
   private showResult(r: KickResult) {
     const o = r.outcome;
-    this.hud.setBars(this.locked, -1, false);
+    this.hud.setGauges(this.locked, GAUGE_NAMES.length, false);
     if (o.goal && r.points) {
       const p = r.points;
       const sub = o.rebound
@@ -364,8 +378,9 @@ export class Game {
 
   private updateDemo(dt: number) {
     const m = this.match!;
+    this.world.ring.update(dt, false, 0, this.locked);
     if (m.phase === 'ready' && this.stateTime > 1.5) {
-      m.takeKick({ height: this.rng.range(0.6, 0.8), direction: this.rng.range(0.25, 0.75), swerve: this.rng.range(-1, 1) });
+      m.takeKick({ height: this.rng.range(0.6, 0.8), direction: this.rng.range(0.25, 0.75), swerve: this.rng.range(-1, 1), dip: this.rng.range(0.3, 1) });
     }
     this.stepSim(dt);
     this.world.renderLive(m, dt);

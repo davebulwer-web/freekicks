@@ -6,7 +6,7 @@ import type { ModeConfig, StageSetup, TargetBoard, WeatherKind } from './types';
 
 /**
  * Procedural free-kick positions. Difficulty ramps with the stage number:
- * longer distance, wider angles, bigger walls, better keepers, faster bars, more wind.
+ * longer distance, wider angles, bigger walls, better keepers, faster ring markers, more wind.
  */
 export function makeStage(stage: number, mode: ModeConfig, runSeed: number): StageSetup {
   const seed = (runSeed * 7919 + stage * 104729) >>> 0;

@@ -30,6 +30,7 @@ import { CharacterSprite, type CharacterPose } from './Characters';
 import { GoalMesh } from './GoalMesh';
 import { buildPitch, type PitchView } from './Pitch';
 import { Stadium } from './Stadium';
+import { ShotRing } from './ShotRing';
 import { Targets } from './Targets';
 import { Weather } from './Weather';
 
@@ -42,6 +43,7 @@ export class World {
   readonly stadium: Stadium;
   readonly weather = new Weather();
   readonly targets: Targets;
+  readonly ring: ShotRing;
   private night = false;
   private weatherKind: WeatherKind = 'clear';
   private windVec = new Vector3();
@@ -95,7 +97,8 @@ export class World {
     this.scene.add(this.stadium.group);
     this.floodlights = this.buildFloodlights();
     this.targets = new Targets(assets);
-    this.scene.add(this.floodlights, this.targets.group);
+    this.ring = new ShotRing(assets.texture(assets.manifest.textures.ringIcons));
+    this.scene.add(this.floodlights, this.targets.group, this.ring.group);
 
     const ballTex = assets.texture(assets.manifest.textures.ball);
     this.ball = new Mesh(new SphereGeometry(BALL_RADIUS, 24, 16), new MeshLambertMaterial({ map: ballTex }));
@@ -116,6 +119,7 @@ export class World {
     this.director.setFreeKick(match.ballStart);
     this.goal.reset();
     this.targets.set(match.setup.targets);
+    this.ring.place(match.ballStart);
     this.setWeather(match.setup.weather, match.env.wind);
   }
 
@@ -169,6 +173,7 @@ export class World {
 
   private place(ballPos: Vector3, ballRot: Quaternion, people: CharacterPose[], keeper: Vector3, live: boolean, dt: number) {
     this.director.update(dt, ballPos, keeper, live);
+    this.ring.face(this.director.camera);
     const cam = this.director.camera.position;
     this.ball.position.copy(ballPos);
     this.ball.quaternion.copy(ballRot);

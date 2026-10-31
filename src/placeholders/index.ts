@@ -326,6 +326,39 @@ export function generateFloodlight(): HTMLCanvasElement {
   return c;
 }
 
+/** Shot ring icons, 4 cells left to right: height, direction, swerve, dip (drawn upright, facing the camera). */
+export function generateRingIcons(): HTMLCanvasElement {
+  const [c, g] = canvas(256, 64);
+  const arrowHead = (x: number, y: number, ang: number) => {
+    g.beginPath();
+    g.moveTo(x + Math.cos(ang) * 9, y + Math.sin(ang) * 9);
+    g.lineTo(x + Math.cos(ang + 2.5) * 9, y + Math.sin(ang + 2.5) * 9);
+    g.lineTo(x + Math.cos(ang - 2.5) * 9, y + Math.sin(ang - 2.5) * 9);
+    g.closePath();
+    g.fill();
+  };
+  const draw = (pass: 'edge' | 'fill') => {
+    g.strokeStyle = g.fillStyle = pass === 'edge' ? '#4a1f57' : '#fbeeff';
+    g.lineWidth = pass === 'edge' ? 9 : 5;
+    g.lineCap = g.lineJoin = 'round';
+    // Height: up/down arrow
+    g.beginPath(); g.moveTo(32, 14); g.lineTo(32, 50); g.stroke();
+    arrowHead(32, 12, -Math.PI / 2); arrowHead(32, 52, Math.PI / 2);
+    // Direction: left/right arrow
+    g.beginPath(); g.moveTo(78, 32); g.lineTo(114, 32); g.stroke();
+    arrowHead(76, 32, Math.PI); arrowHead(116, 32, 0);
+    // Swerve: curved arrow
+    g.beginPath(); g.moveTo(140, 50); g.quadraticCurveTo(140, 16, 178, 16); g.stroke();
+    arrowHead(180, 16, 0);
+    // Dip: arc dropping down
+    g.beginPath(); g.moveTo(202, 44); g.quadraticCurveTo(222, 6, 242, 40); g.stroke();
+    arrowHead(243, 44, 1.25);
+  };
+  draw('edge');
+  draw('fill');
+  return c;
+}
+
 const ADS: [string, string, string][] = [
   ['YOUR AD HERE', '#d01f2e', '#ffffff'],
   ['FREE KICKS', '#0d2b6b', '#ffd200'],
@@ -373,6 +406,7 @@ export function generatePlaceholder(path: string, m: Manifest): HTMLCanvasElemen
     [t.pitchSnow]: generatePitchSnow,
     [t.target]: generateTarget,
     [t.floodlight]: generateFloodlight,
+    [t.ringIcons]: generateRingIcons,
   };
   if (table[path]) return table[path]();
   const hi = m.hoardings.indexOf(path);

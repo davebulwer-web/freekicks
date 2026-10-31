@@ -13,7 +13,7 @@ import { Match, type Outcome } from '../src/sim/Match';
 const mode = (id: string) => (modes as ModeConfig[]).find((m) => m.id === id)!;
 const goal = (x: number, y: number, rebound = false): Outcome => ({ kind: 'goal', goal: true, rebound, message: 'GOAL!', time: 0, crossing: { x, y } });
 const miss: Outcome = { kind: 'wide', goal: false, rebound: false, message: 'WIDE!', time: 0 };
-const shot = (swerve = 0) => ({ height: 0.7, direction: 0.5, swerve });
+const shot = (swerve = 0) => ({ height: 0.7, direction: 0.5, swerve, dip: 0 });
 
 describe('time attack', () => {
   it('misses cost no lives; the game ends when the clock runs out', () => {

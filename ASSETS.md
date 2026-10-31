@@ -92,6 +92,11 @@ The goalkeeper and referee use the same sheets in their own kit colours. If you'
 | pitchSnow | `textures/pitch_snow.png` | Snow overlay with the same extent. Alpha is snow thickness. Keep it below about 85% so the turf shows through. Pitch markings are always drawn on top. |
 | target | `textures/target.png` | Round board for Target Challenge (square image, circle-masked). |
 | floodlight | `textures/floodlight.png` | Lamp panel on the floodlight towers (Night Match). |
+| ringIcons | `textures/ring_icons.png` | Shot ring icons: 4 square cells left to right (height, direction, swerve, dip), drawn upright with a transparent background. |
+
+## Shot ring
+
+The aiming control is a glowing arch drawn around the ball, always facing the camera. It is generated in a shader (`src/render/ShotRing.ts`), so it stays sharp at any distance. Its size, arc and gaps are the `RING` constants, and its colours are `FILL`, `EDGE` and `GLOW` in the shader. Only the icons are a bitmap slot.
 
 ## Advertising hoardings
 

@@ -169,7 +169,7 @@ export class Match {
 
   // ---------------------------------------------------------------- control
 
-  /** Begin the run-up with the locked bar values. */
+  /** Begin the run-up with the locked ring values. */
   takeKick(shot: ShotInput) {
     if (this.phase !== 'ready') return;
     this.shot = shot;

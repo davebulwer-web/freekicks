@@ -41,13 +41,11 @@ async function main() {
   await shot('03-aim');
 
   const tapAt = async (frac) => {
-    // Wait for the moving marker to reach roughly the wanted position, then tap.
+    // Wait for the sweeping marker on the active ring segment to reach roughly the wanted value, then tap.
     for (let i = 0; i < 400; i++) {
       const v = await page.evaluate(() => {
-        const bars = [...document.querySelectorAll('.bar')];
-        const a = bars.findIndex((b) => b.classList.contains('active'));
-        if (a < 0) return null;
-        return parseFloat(bars[a].querySelector('.bar-marker').style.left) / 100;
+        const a = window.game.aim;
+        return a.active < 4 ? a.values[a.active] : null;
       });
       if (v !== null && Math.abs(v - frac) < 0.04) break;
       await wait(10);
@@ -55,11 +53,11 @@ async function main() {
     await page.mouse.click(480, 200);
   };
 
-  const plan = [[0.72, 0.62, 0.35], [0.7, 0.3, 0.75], [0.2, 0.05, 0.5], [0.95, 0.5, 0.5], [0.1, 0.95, 0.1], [0.5, 0.5, 0.5]];
+  const plan = [[0.72, 0.62, 0.35, 0.95], [0.7, 0.3, 0.75, 0.9], [0.2, 0.05, 0.5, 0.5], [0.95, 0.5, 0.5, 0.1], [0.1, 0.95, 0.1, 0.5], [0.5, 0.5, 0.5, 0.5]];
   for (let k = 0; k < 8; k++) {
     const p = plan[k % plan.length];
     if (await page.$('text=GAME OVER')) break;
-    await tapAt(p[0]); await tapAt(p[1]); await tapAt(p[2]);
+    await tapAt(p[0]); await tapAt(p[1]); await tapAt(p[2]); await tapAt(p[3]);
     await wait(900);
     await shot(`1${k}-a-flight`);
     const res = await page.waitForFunction(() => {

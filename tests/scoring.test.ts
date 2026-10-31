@@ -8,7 +8,7 @@ import type { Outcome } from '../src/sim/Match';
 const mode = modes[0] as ModeConfig;
 const goal = (x: number, y: number, rebound = false): Outcome => ({ kind: 'goal', goal: true, rebound, message: '', time: 0, crossing: { x, y } });
 const miss: Outcome = { kind: 'wide', goal: false, rebound: false, message: '', time: 0 };
-const shot = { height: 0.7, direction: 0.5, swerve: 0 };
+const shot = { height: 0.7, direction: 0.5, swerve: 0, dip: 0 };
 
 describe('scoring', () => {
   it('zones: top corner beats the middle', () => {

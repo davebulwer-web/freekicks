@@ -96,6 +96,7 @@ export const DEFAULT_MANIFEST: Manifest = {
     pitchSnow: 'textures/pitch_snow.png',
     target: 'textures/target.png',
     floodlight: 'textures/floodlight.png',
+    ringIcons: 'textures/ring_icons.png',
   },
   hoardings: [
     'hoardings/hoarding_01.png',

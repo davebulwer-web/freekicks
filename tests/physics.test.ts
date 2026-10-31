@@ -17,7 +17,7 @@ describe('ball physics', () => {
     const results = [-1, 0, 1].map((swerve) => {
       const b = new Ball();
       b.pos.copy(start);
-      const k = computeKick(start, { height: 0.5, direction: 0.5, swerve });
+      const k = computeKick(start, { height: 0.5, direction: 0.5, swerve, dip: 0 });
       b.vel.copy(k.vel);
       b.spin.copy(k.spin);
       return fly(b).x;
@@ -25,6 +25,20 @@ describe('ball physics', () => {
     expect(Math.abs(results[1])).toBeLessThan(0.05);
     expect(results[2]).toBeGreaterThan(1.5);
     expect(results[0]).toBeLessThan(-1.5);
+  });
+
+  it('dip makes the ball drop: topspin crosses the goal line lower, backspin floats higher', () => {
+    const start = new Vector3(0, BALL_RADIUS, 20);
+    const [float, none, dip] = [-1, 0, 1].map((d) => {
+      const b = new Ball();
+      b.pos.copy(start);
+      const k = computeKick(start, { height: 0.6, direction: 0.5, swerve: 0, dip: d });
+      b.vel.copy(k.vel);
+      b.spin.copy(k.spin);
+      return fly(b).y;
+    });
+    expect(dip).toBeLessThan(none - 0.5);
+    expect(float).toBeGreaterThan(none + 0.3);
   });
 
   it('wind pushes the ball downwind', () => {

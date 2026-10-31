@@ -41,26 +41,23 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0b3d1c; col
 .hud-clock { font-size: 26px; color: #fff; text-shadow: 0 2px 3px rgba(0,0,0,.7); }
 .hud-clock.low { color: var(--miss); animation: pulse .5s infinite; }
 .hud-mode { font: 700 11px system-ui, sans-serif; color: var(--accent); letter-spacing: 1px; }
-.bar-deadzone { position: absolute; top: 0; bottom: 0; background: rgba(220, 40, 40, .45); }
 .life.lost { opacity: .25; filter: grayscale(1); }
 .hud-stage { font-size: 26px; text-shadow: 0 2px 3px rgba(0,0,0,.7); background: linear-gradient(90deg, transparent, rgba(160,20,20,.75)); padding: 2px 14px 2px 40px; }
-.wind { position: absolute; right: 14px; bottom: 120px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.wind { position: absolute; right: 14px; bottom: 90px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .wind-dial { width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(#145a74, #0b3348); border: 4px solid var(--panel-edge); display: grid; place-items: center; }
 .wind-arrow { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 30px solid #e0442e; transition: transform .3s; }
 .wind-text, .weather-icon { font-size: 12px; text-shadow: 0 1px 2px #000; }
-.exit { position: absolute; left: 12px; bottom: 120px; }
-.view { position: absolute; left: 100px; bottom: 120px; padding: 10px 14px; font-size: 12px; }
-.bars { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 16px max(10px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(0,0,0,.45) 30%); display: flex; gap: 14px; }
-.bar { flex: 1; opacity: .55; transition: opacity .2s; }
-.bar.active { opacity: 1; }
-.bar.locked { opacity: .9; }
-.bar-label { font-size: 12px; margin-bottom: 4px; letter-spacing: 2px; }
-.bar.active .bar-label { color: var(--accent); }
-.bar-track { position: relative; height: 26px; border-radius: 6px; background: linear-gradient(90deg, #0d3e57, #1b6d8f 50%, #0d3e57); border: 3px solid var(--panel-edge); }
-.bar:first-child .bar-track { background: linear-gradient(90deg, #0d3e57, #2f8a3e 60%, #c9b02a 80%, #a8302a); }
-.bar-centre { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: #fff8; }
-.bar-marker { position: absolute; top: -6px; bottom: -6px; width: 8px; margin-left: -4px; background: var(--accent); border: 2px solid #111; border-radius: 3px; }
-.bar.locked .bar-marker { background: #fff; }
+.exit { position: absolute; left: 12px; bottom: 90px; }
+.view { position: absolute; left: 100px; bottom: 90px; padding: 10px 14px; font-size: 12px; }
+.gauges { position: absolute; left: 50%; transform: translateX(-50%); bottom: max(10px, env(safe-area-inset-bottom)); display: flex; gap: 6px; }
+.gauge {
+  display: flex; flex-direction: column; align-items: center; min-width: 92px; padding: 4px 10px; border-radius: 12px;
+  background: rgba(40, 14, 52, .55); border: 2px solid rgba(232, 200, 245, .35); opacity: .55; transition: all .2s;
+}
+.gauge-name { font-size: 10px; letter-spacing: 2px; color: #f1d8fb; }
+.gauge-value { font: 700 13px system-ui, sans-serif; color: #fff; }
+.gauge.locked { opacity: .95; border-color: rgba(232, 200, 245, .8); }
+.gauge.active { opacity: 1; border-color: #fff; box-shadow: 0 0 12px rgba(255, 210, 255, .9); }
 .banner-wrap { position: absolute; left: 0; right: 0; top: 26%; text-align: center; }
 .banner { font-size: 64px; letter-spacing: 3px; opacity: 0; transform: scale(.6); transition: all .25s cubic-bezier(.3,1.6,.6,1); text-shadow: 0 4px 0 #000, 0 0 24px rgba(0,0,0,.6); }
 .banner.show { opacity: 1; transform: scale(1); }
@@ -68,7 +65,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0b3d1c; col
 .banner.miss { color: #fff; }
 .banner-sub { font-family: system-ui, sans-serif; font-weight: 700; font-size: 18px; opacity: 0; transition: opacity .3s .15s; text-shadow: 0 2px 4px #000; }
 .banner-sub.show { opacity: 1; }
-.hint { position: absolute; left: 0; right: 0; bottom: 84px; text-align: center; font-size: 14px; text-shadow: 0 2px 3px #000; animation: pulse 1.2s infinite; }
+.hint { position: absolute; left: 0; right: 0; top: 58px; text-align: center; font-size: 14px; text-shadow: 0 2px 3px #000; animation: pulse 1.2s infinite; }
 @keyframes pulse { 50% { opacity: .5; } }
 .replay-ui { position: absolute; inset: 0; pointer-events: none; }
 .replay-tag { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); background: rgba(180,20,20,.85); padding: 4px 16px; border-radius: 4px; font-size: 16px; animation: pulse 1.6s infinite; }
@@ -135,5 +132,6 @@ select, input[type=text] { font: 14px system-ui, sans-serif; padding: 6px 8px; b
   .kit-preview { height: 84px; }
   .banner { font-size: 46px; }
   .editor-preview .kit-preview { height: 110px; }
-  .wind, .exit, .view { bottom: 96px; }
+  .wind, .exit, .view { bottom: 70px; }
+  .gauge { min-width: 76px; padding: 2px 8px; }
 }

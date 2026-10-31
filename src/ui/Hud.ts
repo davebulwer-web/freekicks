@@ -1,10 +1,22 @@
 import { el, shield } from './dom';
 
-export const BAR_NAMES = ['HEIGHT', 'DIRECTION', 'SWERVE'] as const;
+export const GAUGE_NAMES = ['HEIGHT', 'DIRECTION', 'SWERVE', 'DIP'] as const;
+
+/** Human-readable value for a gauge (0..1). */
+export function gaugeText(i: number, v: number): string {
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const side = (x: number, l: string, r: string) => (Math.abs(x) < 0.04 ? 'CENTRE' : `${x < 0 ? l : r} ${Math.round(Math.abs(x) * 100)}`);
+  switch (i) {
+    case 0: return pct(v);
+    case 1: return side(v * 2 - 1, 'L', 'R');
+    case 2: return side(v * 2 - 1, 'LEFT', 'RIGHT');
+    default: return Math.abs(v * 2 - 1) < 0.04 ? 'NONE' : v < 0.5 ? `FLOAT ${Math.round((1 - v * 2) * 100)}` : `DIP ${Math.round((v * 2 - 1) * 100)}`;
+  }
+}
 
 /**
- * In-game overlay: score, stage, lives, wind gauge, the three shot bars, messages and the
- * replay controls.
+ * In-game overlay: score, stage, lives, wind gauge, the shot settings readout (the ring itself is
+ * drawn on the pitch), messages and the replay controls.
  */
 export class Hud {
   readonly root: HTMLElement;
@@ -14,12 +26,11 @@ export class Hud {
   private lives = el('div.hud-lives');
   private clock = el('div.hud-clock');
   private modeTag = el('div.hud-mode');
-  private deadZone = el('div.bar-deadzone');
   private windArrow = el('div.wind-arrow');
   private windText = el('div.wind-text');
   private weatherIcon = el('div.weather-icon');
-  private bars: { root: HTMLElement; marker: HTMLElement; label: HTMLElement }[] = [];
-  private barPanel = el('div.bars');
+  private chips: { root: HTMLElement; value: HTMLElement }[] = [];
+  private chipPanel = el('div.gauges');
   private banner = el('div.banner');
   private sub = el('div.banner-sub');
   private hint = el('div.hint');
@@ -31,13 +42,11 @@ export class Hud {
   onResetView: () => void = () => {};
 
   constructor(parent: HTMLElement) {
-    BAR_NAMES.forEach((name, i) => {
-      const marker = el('div.bar-marker');
-      const label = el('div.bar-label', { text: name });
-      const track = el('div.bar-track', {}, [i === 2 ? this.deadZone : null, i === 2 ? el('div.bar-centre') : null, marker]);
-      const root = el('div.bar', {}, [label, track]);
-      this.bars.push({ root, marker, label });
-      this.barPanel.append(root);
+    GAUGE_NAMES.forEach((name) => {
+      const value = el('span.gauge-value');
+      const root = el('div.gauge', {}, [el('span.gauge-name', { text: name }), value]);
+      this.chips.push({ root, value });
+      this.chipPanel.append(root);
     });
     this.replay.append(
       el('div.replay-tag', {}, ['REPLAY ', this.replayAngle]),
@@ -51,7 +60,7 @@ export class Hud {
       el('div.wind', {}, [el('div.wind-dial', {}, [this.windArrow]), this.windText, this.weatherIcon]),
       shield(el('button.btn.exit', { text: 'EXIT', onclick: () => this.onExit() })),
       shield(el('button.btn.view', { text: '⟲ VIEW', title: 'Reset camera', onclick: () => this.onResetView() })),
-      this.barPanel,
+      this.chipPanel,
       el('div.banner-wrap', {}, [this.banner, this.sub]),
       this.hint,
       this.replay,
@@ -64,10 +73,6 @@ export class Hud {
   configure(opts: { timed: boolean; minSwerve?: number; tag?: string }) {
     this.lives.style.display = opts.timed ? 'none' : '';
     this.clock.style.display = opts.timed ? '' : 'none';
-    const dz = opts.minSwerve ?? 0;
-    this.deadZone.style.display = dz > 0 ? '' : 'none';
-    this.deadZone.style.left = `${50 - dz * 50}%`;
-    this.deadZone.style.width = `${dz * 100}%`;
     this.modeTag.textContent = opts.tag ?? '';
   }
 
@@ -99,15 +104,16 @@ export class Hud {
     this.weatherIcon.textContent = weather === 'rain' ? '🌧 RAIN' : weather === 'snow' ? '❄ SNOW' : '';
   }
 
-  /** active: index of the moving bar (-1 none). values: 0..1 */
-  setBars(values: number[], active: number, visible: boolean) {
-    this.barPanel.style.display = visible ? '' : 'none';
-    this.bars.forEach((b, i) => {
-      b.marker.style.left = `${values[i] * 100}%`;
-      b.root.classList.toggle('active', i === active);
-      b.root.classList.toggle('locked', i < active || active === -1);
+  /** Shot settings readout. active: index of the sweeping gauge (4 = all set). values: 0..1 */
+  setGauges(values: number[], active: number, visible: boolean) {
+    this.chipPanel.style.display = visible ? '' : 'none';
+    this.chips.forEach((c, i) => {
+      c.root.classList.toggle('active', i === active);
+      c.root.classList.toggle('locked', i < active);
+      c.value.textContent = i <= active ? gaugeText(i, values[i]) : '—';
     });
   }
+
 
   message(text: string, sub = '', kind: 'goal' | 'miss' | 'info' = 'info') {
     this.banner.textContent = text;
