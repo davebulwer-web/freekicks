@@ -100,7 +100,7 @@ The aiming control is a glowing arch drawn around the ball, always facing the ca
 
 ## Advertising hoardings
 
-`hoardings/hoarding_01.png` to `_06.png` are 1024 × 128 px. Each one is a 6 m × 0.9 m panel. Add as many as you like to the `hoardings` list in the manifest; panels around the ground cycle through them in order.
+`hoardings/hoarding_01.png` to `_10.png` are 1024 × 128 px, sliced from the sponsor sheet in `art/hoardings/hoardings_sheet.png` (ten boards, 10 px separators, plus a `@2x` version). The sheet's source is `tools/hoardings/hoardings.html`; run `node tools/hoardings/render.cjs` to re-render the sheet and slices. Each one is a 6 m × 0.9 m panel. Add as many as you like to the `hoardings` list in the manifest; panels around the ground cycle through them in order.
 
 ## Stadium layout
 
