@@ -1,10 +1,13 @@
 {
-  "_comment": "Event types. weight = how often the spawner picks it (video calls are scheduled separately, so weight 0). timeLimit and hold are seconds. calm = anger removed on success; angerOnFail = anger added if the timer runs out.",
+  "_comment": "Event types. weight = how often the spawner picks it (video calls are scheduled separately, so weight 0). timeLimit and hold are seconds. calm = anger removed on success; angerOnFail = anger added if the timer runs out. Darts: winChance is Andy's chance of beating Big Toe Dave; a win removes calmOnWin anger, a loss adds angerOnLoss.",
   "car":    { "weight": 3,   "timeLimit": 30, "hold": 1.0, "angerOnFail": 12, "angerOnWrong": 10, "calm": 4,  "score": 150, "legitChance": 0.55 },
   "toilet": { "weight": 2,   "timeLimit": 32, "hold": 0.8, "angerOnFail": 14, "calm": 3,  "score": 120 },
   "rant":   { "weight": 2,   "timeLimit": 40, "hold": 1.6, "angerOnFail": 10, "calm": 12, "score": 120 },
   "fun":    { "weight": 3,   "timeLimit": 30, "hold": 1.2, "angerOnFail": 10, "calm": 3,  "score": 100 },
   "video":  { "weight": 0,   "timeLimit": 18, "hold": 8.0, "angerOnFail": 16, "calm": 4,  "score": 200 },
   "boss":   { "weight": 1.2, "timeLimit": 40, "hold": 0.4, "angerOnFail": 15, "calm": 2,  "score": 150 },
-  "shower": { "weight": 1,   "timeLimit": 35, "hold": 1.2, "angerOnFail": 8,  "calm": 3,  "score": 100 }
+  "shower": { "weight": 1,   "timeLimit": 35, "hold": 1.2, "angerOnFail": 8,  "calm": 3,  "score": 100 },
+  "invoice": { "weight": 2,  "timeLimit": 35, "hold": 2.5, "angerOnFail": 8,  "calm": 3,  "score": 100 },
+  "darts":  { "weight": 1.2, "timeLimit": 30, "hold": 0.6, "angerOnFail": 6,  "calm": 0,  "score": 150, "winChance": 0.5, "calmOnWin": 14, "angerOnLoss": 10, "gameSeconds": 6 },
+  "amber":  { "weight": 1,   "timeLimit": 22, "hold": 1.0, "angerOnFail": 8,  "calm": 8,  "score": 100 }
 }

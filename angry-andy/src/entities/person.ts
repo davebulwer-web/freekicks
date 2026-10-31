@@ -31,7 +31,7 @@ export class Person {
   }
 }
 
-export type Activity = null | 'game' | 'football' | 'chat' | 'lounge' | 'toilet' | 'shower';
+export type Activity = null | 'game' | 'football' | 'chat' | 'lounge' | 'toilet' | 'shower' | 'phone';
 
 /** Office worker: sits at their desk, wanders to the printer/kitchen now and then, or follows a script. */
 export class Npc extends Person {
@@ -92,6 +92,7 @@ export class Npc extends Person {
           lounge: ['Zzz...', '*munch*', 'Zzz...'],
           toilet: ['*grunt*', '...', 'Hmm hmm hmm'],
           shower: ['La la la!', '*splash*', 'Ahhh...'],
+          phone: ['*scrolls phone*', '*sips coffee*', '*scrolls phone*'],
         };
         this.say(pick(rng, lines[this.activity]), 1.5, 'fun');
       }

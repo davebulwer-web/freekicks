@@ -26,12 +26,24 @@ describe('office map', () => {
     for (const p of path!) expect(map.blockedPx(p.x, p.y)).toBe(false);
   });
 
+  it('joins the front and back entrances with a door inside the building', () => {
+    expect(map.char(26, 13)).toBe('.');
+    expect(map.char(26, 14)).toBe('.');
+    // Middle Office to the toilet corridor without going outside round the car park
+    const path = map.findPath(map.seat('mid5'), map.point('toiletDoor'))!;
+    expect(path).not.toBeNull();
+    for (const p of path) expect(p.y).toBeLessThan(15 * map.ts);
+  });
+
   it('puts the right rooms in the right places', () => {
     expect(map.roomAt(map.seat('andy'))?.id).toBe('it');
     expect(map.roomAt(map.point('kettle'))?.id).toBe('kitchen');
     expect(map.roomAt(map.point('toilet'))?.id).toBe('toilet');
     expect(map.roomAt(map.point('serverLounge'))?.id).toBe('server');
     expect(map.roomAt(map.seat('fin1'))?.id).toBe('finance');
+    expect(map.roomAt(map.point('itCorner'))?.id).toBe('it');
+    expect(map.roomAt(map.point('dartsOche'))?.id).toBe('it');
+    expect(map.roomAt(map.point('itInvoice'))?.id).toBe('it');
   });
 
   it('gives every desk-owning character a real desk', () => {

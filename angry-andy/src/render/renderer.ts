@@ -179,6 +179,8 @@ export class Renderer {
     items.sort((a, b) => a.y - b.y);
     for (const it of items) it.draw();
 
+    if (g.modal?.kind === 'darts') this.drawDarts(g, obj);
+
     // task markers
     for (const { task, pos } of g.liveTargets()) this.drawMarker(task, pos);
     for (const t of g.tasks) if (t.phase === 'upcoming') { const p = t.target(); if (p) this.drawMarker(t, p, true); }
@@ -488,6 +490,7 @@ export class Renderer {
     }
     if (g.modal?.kind === 'car') this.drawCarModal(g);
     if (g.modal?.kind === 'boss') this.drawBossModal(g);
+    if (g.modal?.kind === 'darts') this.drawDartsBoard(g);
     if (g.screen === 'title') this.drawTitle(g);
     if (g.screen === 'paused') this.drawCentre(['PAUSED', '', 'Press P or tap to carry on']);
     if (g.screen === 'dayEnd') this.drawDayEnd(g);
@@ -582,6 +585,68 @@ export class Renderer {
     ctx.textBaseline = 'top';
   }
 
+  /** Darts stuck in the board, plus the one in flight. */
+  private drawDarts(g: Game, obj: (name: string, px: number, py: number) => void) {
+    const m = g.modal as Extract<typeof g.modal, { kind: 'darts' }>;
+    const ts = g.map.ts;
+    const board = g.map.data.objects.find((o) => o.type === 'dartboard');
+    if (!board) return;
+    const bx = board.x * ts + 8, by = board.y * ts + 10;
+    const shown = g.dartsShown(m);
+    for (let i = 0; i < shown; i++) obj('dart', bx + m.throws[i].dx - 1, by + m.throws[i].dy - 6);
+    if (shown < 6) {
+      const seg = m.total / 7.5;
+      const f = (((m.total - m.t) % seg) / seg);
+      if (f > 0.4) {
+        const k = (f - 0.4) / 0.6;
+        const th = m.throws[shown];
+        const from = th.who === 'andy' ? g.andy : g.npc('dave');
+        const x = from.x + (bx + th.dx - from.x) * k, y = from.y - 18 + (by + th.dy - (from.y - 18)) * k - Math.sin(k * Math.PI) * 6;
+        obj('dart', x - 1, y - 6);
+      }
+    }
+  }
+
+  private drawDartsBoard(g: Game) {
+    const ctx = this.ctx;
+    const m = g.modal as Extract<typeof g.modal, { kind: 'darts' }>;
+    const shown = g.dartsShown(m);
+    const x = 440, y = HUD_H + 8, w = 192, h = 92;
+    this.box(x, y, w, h);
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    ctx.font = `10px ${TITLE_FONT}`;
+    ctx.fillStyle = C.warn;
+    ctx.fillText('DARTS', x + 8, y + 7);
+    this.icon('darts', x + w - 24, y + 4);
+    const rowFor = (who: 'andy' | 'dave', yy: number, label: string) => {
+      const mine = m.throws.map((t, i) => ({ t, i })).filter(({ t }) => t.who === who);
+      const vis = mine.filter(({ i }) => i < shown);
+      const total = vis.reduce((s2, { t }) => s2 + t.score, 0);
+      ctx.font = `14px ${FONT}`;
+      ctx.fillStyle = C.text;
+      ctx.fillText(label, x + 8, yy);
+      mine.forEach(({ t, i }, k) => {
+        ctx.fillStyle = i < shown ? C.text : C.dim;
+        ctx.fillText(i < shown ? String(t.score) : '-', x + 84 + k * 26, yy);
+      });
+      ctx.fillStyle = C.warn;
+      ctx.textAlign = 'right';
+      ctx.fillText(String(total), x + w - 8, yy);
+      ctx.textAlign = 'left';
+    };
+    rowFor('andy', y + 26, 'Andy');
+    rowFor('dave', y + 44, 'Big Toe Dave');
+    ctx.font = `12px ${FONT}`;
+    if (shown >= 6) {
+      ctx.fillStyle = m.win ? C.good : C.bad;
+      ctx.fillText(m.win ? 'GAME SHOT! Andy wins.' : 'Dave wins. Andy is fuming.', x + 8, y + 68);
+    } else {
+      ctx.fillStyle = C.dim;
+      ctx.fillText(`${m.throws[shown].who === 'andy' ? 'Andy' : 'Dave'} to throw...`, x + 8, y + 68);
+    }
+  }
+
   private drawBossModal(g: Game) {
     const ctx = this.ctx;
     const m = g.modal as Extract<typeof g.modal, { kind: 'boss' }>;
@@ -635,9 +700,9 @@ export class Renderer {
     const lines = [
       'Andy is the IT Manager. He is permanently annoyed.',
       'Deal with each task before its timer runs out or his ANGER rises.',
-      'Check cars in the car park, chase people out of the loo, rant at the',
-      'usual suspects, stop the IT lads having fun, take video calls at',
-      'your desk and go upstairs when the boss calls.',
+      'Check cars, chase people out of the loo, rant at the usual suspects,',
+      'stop the IT lads having fun, sign invoices, take video calls, beat',
+      'Big Toe Dave at darts and go upstairs when the boss calls.',
       'Keep BLADDER (loo) and THIRST (tea in the kitchen) under control.',
       'Survive until 5 o\'clock. If anger hits 100%... MELTDOWN.',
     ];

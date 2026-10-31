@@ -26,15 +26,17 @@
     { "id": "clive", "name": "Cloud Clive", "role": "Marketing", "office": "middle", "desk": "mid5", "rantTarget": true, "rantReason": "Bought software on his credit card.",
       "look": { "skin": "#f0caa8", "hair": "short", "hairColor": "#777", "glasses": true, "shirt": "#e9e2c8", "trousers": "#6a5a40", "shoes": "#3a2a1a" } },
 
-    { "id": "mick", "name": "Big Mick", "role": "IT Support (50s)", "office": "it", "desk": "it1",
+    { "id": "dave", "name": "Big Toe Dave", "role": "IT Support (50s)", "office": "it", "desk": "it1",
       "look": { "skin": "#ecb894", "hair": "short", "hairColor": "#9a9a9a", "shirt": "#5a6e8c", "trousers": "#2a2a30", "build": "large", "shoes": "#222" } },
-    { "id": "ben", "name": "Bearded Ben", "role": "IT Support (30)", "office": "it", "desk": "it2",
+    { "id": "pj", "name": "PJ", "role": "IT Support (30)", "office": "it", "desk": "it2",
       "look": { "skin": "#eec29c", "hair": "short", "hairColor": "#6a3e1e", "beard": true, "shirt": "#3c7a5a", "trousers": "#34404e", "shoes": "#5a3a1a" } },
-    { "id": "dev", "name": "Dev", "role": "IT Apprentice (20)", "office": "it", "desk": "it3",
+    { "id": "pavan", "name": "Pavan", "role": "IT Apprentice (20)", "office": "it", "desk": "it3",
       "look": { "skin": "#a8714a", "hair": "spiky", "hairColor": "#121212", "shirt": "#e0e0e0", "trousers": "#2a3a5a", "hoodie": "#4a4a8a", "shoes": "#eee" } },
 
     { "id": "lee", "name": "Lycra Lee", "role": "Cyclist", "office": "outside",
       "look": { "skin": "#f0c4a0", "hair": "helmet", "hairColor": "#e83030", "shirt": "#f4e030", "trousers": "#181818", "shoes": "#181818" } },
+    { "id": "amber", "name": "Amber", "role": "Next-door office", "office": "nextdoor",
+      "look": { "skin": "#f4d0b4", "hair": "long", "hairColor": "#f0d070", "shirt": "#f2a0b8", "trousers": "#2a2a3a", "skirt": true, "shoes": "#222" } },
     { "id": "boss", "name": "The Boss", "role": "Managing Director", "office": "upstairs",
       "look": { "skin": "#efc6a4", "hair": "short", "hairColor": "#d8d8d8", "glasses": false, "shirt": "#2a2a3a", "trousers": "#1a1a22", "tie": "#c8a030", "shoes": "#111" } }
   ]

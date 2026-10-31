@@ -601,6 +601,24 @@ function sign() {
   s.vline(7, 12, 15, '#444'); s.vline(8, 12, 15, '#444');
   return s;
 }
+function dartboard() {
+  const d = new Img(16, 16);
+  d.ellipse(8, 8, 7.5, 7.5, '#1a1a1a');
+  d.ellipse(8, 8, 6.5, 6.5, '#e8dcb8');
+  for (let a = 0; a < 20; a += 2) {
+    const t = (a / 20) * Math.PI * 2;
+    for (let r = 2; r < 6.5; r += 0.5) d.set(8 + Math.cos(t) * r, 8 + Math.sin(t) * r, '#1a1a1a');
+  }
+  for (let k = 0; k < 40; k++) { const t = (k / 40) * Math.PI * 2; d.set(8 + Math.cos(t) * 6, 8 + Math.sin(t) * 6, k % 2 ? '#c02020' : '#208a40'); }
+  for (let k = 0; k < 24; k++) { const t = (k / 24) * Math.PI * 2; d.set(8 + Math.cos(t) * 3.5, 8 + Math.sin(t) * 3.5, k % 2 ? '#c02020' : '#208a40'); }
+  d.rect(7, 7, 2, 2, '#c02020'); d.set(8, 8, '#208a40');
+  return d;
+}
+function dart() {
+  const d = new Img(3, 7);
+  d.set(1, 0, '#ddd'); d.vline(1, 1, 4, '#c8a030'); d.rect(0, 5, 3, 2, '#2060d0');
+  return d;
+}
 function stairsArrow() {
   const s = new Img(16, 16);
   s.rect(6, 6, 4, 8, '#f8f0c0'); for (let i = 0; i < 5; i++) s.hline(8 - i, 7 + i, 2 + i, '#f8f0c0');
@@ -627,7 +645,7 @@ function car(col) {
 
 // ---------------------------------------------------------------- UI icons (16x16)
 
-const ICONS = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'tea', 'bladder', 'check', 'cross', 'clock', 'warning', 'sound_on', 'sound_off', 'star'];
+const ICONS = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'tea', 'bladder', 'check', 'cross', 'clock', 'warning', 'sound_on', 'sound_off', 'star', 'invoice', 'darts', 'window'];
 function icon(name) {
   const i = new Img(16, 16);
   switch (name) {
@@ -646,6 +664,9 @@ function icon(name) {
     case 'warning': for (let k = 0; k < 7; k++) i.hline(8 - k, 7 + k, 2 + k * 2, '#f0c020'), i.hline(8 - k, 7 + k, 3 + k * 2, '#f0c020'); i.rect(7, 6, 2, 5, '#222'); i.rect(7, 12, 2, 1, '#222'); break;
     case 'sound_on': i.rect(2, 6, 3, 4, '#ddd'); for (let k = 0; k < 4; k++) i.vline(5 + k, 6 - k, 9 + k, '#ddd'); i.vline(11, 5, 10, '#ddd'); i.vline(13, 3, 12, '#ddd'); break;
     case 'sound_off': i.rect(2, 6, 3, 4, '#888'); for (let k = 0; k < 4; k++) i.vline(5 + k, 6 - k, 9 + k, '#888'); for (let k = 0; k < 5; k++) { i.set(10 + k, 5 + k, '#e44'); i.set(14 - k, 5 + k, '#e44'); } break;
+    case 'invoice': i.rect(3, 1, 10, 14, '#f8f8f8'); i.hline(5, 10, 4, '#999'); i.hline(5, 10, 6, '#999'); i.hline(5, 8, 8, '#999'); for (let k = 0; k < 7; k++) i.set(4 + k, 12 - (k % 3 === 1 ? 1 : 0), '#2040c0'); i.set(11, 10, '#2040c0'); break;
+    case 'darts': i.ellipse(7, 9, 6, 6, '#1a1a1a'); i.ellipse(7, 9, 4.5, 4.5, '#e8dcb8'); i.ellipse(7, 9, 2.5, 2.5, '#c02020'); i.set(7, 9, '#208a40'); for (let k = 0; k < 5; k++) i.set(8 + k, 8 - k, '#c8a030'); i.rect(13, 1, 2, 2, '#2060d0'); break;
+    case 'window': i.rect(1, 2, 14, 12, '#7aa8d8'); i.frame(1, 2, 14, 12, '#e8e8e8'); i.vline(8, 2, 13, '#e8e8e8'); i.hline(1, 14, 8, '#e8e8e8'); i.rect(4, 4, 2, 2, '#f0d070'); i.rect(4, 6, 2, 2, '#f2a0b8'); break;
     case 'star': for (let k = 0; k < 6; k++) i.hline(8 - k, 7 + k, 7, '#f0d040'); i.rect(6, 2, 4, 12, '#f0d040'); i.rect(2, 6, 12, 3, '#f0d040'); break;
   }
   i.outline(OUTLINE);
@@ -729,6 +750,7 @@ const objs = packRow([
   { name: 'printer', img: printer(), oy: -6 }, { name: 'cooler', img: cooler(), oy: -10 },
   { name: 'plant', img: plant(), oy: -8 }, { name: 'filing', img: filing(), oy: -8 },
   { name: 'beanbag', img: beanbag() }, { name: 'bin', img: bin() }, { name: 'whiteboard', img: whiteboard(), oy: -8 },
+  { name: 'dartboard', img: dartboard(), oy: 2 }, { name: 'dart', img: dart() },
   { name: 'mess', img: mess(), oy: 4 }, { name: 'out_of_order', img: sign() }, { name: 'stairs_up', img: stairsArrow() },
 ]);
 objs.sheet.save('sprites/objects.png');

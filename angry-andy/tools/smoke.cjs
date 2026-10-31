@@ -59,6 +59,18 @@ const PORT = 5199;
       await page.screenshot({ path: path.join(OUT, '4-car-check.png') });
       await page.keyboard.press('a');
     }
+    // darts with Big Toe Dave, Amber outside and an invoice on the way
+    await page.evaluate(() => { const g = window.__andy.game; g.tasks = g.tasks.filter((t) => t.type !== 'fun'); g.npc('dave').goHome(g.map); g.spawn('darts'); g.spawn('amber'); g.spawn('invoice'); });
+    await page.waitForTimeout(7000);
+    await page.evaluate(() => { const g = window.__andy.game; const d = g.npc('dave'); g.andy.x = d.x; g.andy.y = d.y + 8; });
+    await page.keyboard.down('e');
+    await page.waitForTimeout(900);
+    await page.keyboard.up('e');
+    await page.waitForTimeout(3500);
+    await page.screenshot({ path: path.join(OUT, '5a-darts.png') });
+    const dartsOk = await page.evaluate(() => window.__andy.game.modal?.kind === 'darts');
+    if (!dartsOk) errors.push('darts game did not start');
+    await page.waitForTimeout(3500);
     await page.evaluate(() => { const g = window.__andy.game; g.spawn('boss'); const p = g.map.point('stairs'); g.andy.x = p.x; g.andy.y = p.y; });
     await page.keyboard.down('e');
     await page.waitForTimeout(800);

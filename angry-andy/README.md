@@ -8,7 +8,10 @@ A small top-down pixel-art browser game. You are **Andy**, a permanently annoyed
   - **Car arriving**: a car parks in the car park. Check the permit, then **Allow** or **Send away**. The plate must match and the date must not have passed. A wrong call costs anger.
   - **Loo alert**: someone is heading to the toilet to make a mess. Catch them, on the way or in there. If you're too late the toilet is out of order for a while, so Andy can't use it either.
   - **Rant at...**: one of the usual suspects (Printer Pam, Reply-All Roger, Password Pete, Cloud Clive, Budget Brenda) needs a telling-off. Ranting calms Andy the most.
-  - **IT staff having fun**: Big Mick, Bearded Ben or Dev are gaming, watching football, chatting, or lounging in the server room. Stop them.
+  - **IT staff having fun**: Big Toe Dave, PJ or Pavan are gaming, watching football, chatting, or lounging in the server room. Stop them.
+  - **Sign invoices**: a Finance lady walks over to the IT Office with invoices. Find her and hold to sign.
+  - **Darts challenge**: Big Toe Dave challenges Andy at the dartboard (top right of the IT Office). Three darts each, and the result is random. A win calms Andy down a lot; a loss winds him up.
+  - **Amber's outside**: Amber from the office next door stands on the pavement outside the IT Office. Get Andy to the bottom-left corner of the IT Office before she wanders off.
   - **Video call**: these are booked ahead and shown as "Starts in..." Be at your desk when one starts, then hold to sit through it while other tasks keep ticking.
   - **Boss wants you**: go to the stairs. Andy is upstairs for a few seconds, and the timers keep running while he's away.
   - **Shower hog**: Lycra Lee cycles in and hogs the shower. Evict him.

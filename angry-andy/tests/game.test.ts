@@ -58,4 +58,75 @@ describe('game simulation', () => {
     expect(g.stats.done).toBe(1);
     expect(g.meters.anger).toBeLessThan(anger);
   });
+
+  function play(g: Game, input: Input, secs: number) {
+    for (let i = 0; i < secs * 30; i++) g.update(1 / 30, input);
+  }
+
+  it('signing invoices: the Finance lady walks to IT and Andy signs', () => {
+    const g = new Game(null, 11);
+    g.newGame();
+    const input = fakeInput();
+    g.spawn('invoice');
+    const t = g.tasks.find((k) => k.type === 'invoice')!;
+    expect(t.npc!.office).toBe('finance');
+    play(g, input, 26);
+    const spot = g.map.point('itInvoice');
+    expect(Math.hypot(t.npc!.x - spot.x, t.npc!.y - spot.y)).toBeLessThan(2);
+    g.andy.x = t.npc!.x - 10;
+    g.andy.y = t.npc!.y;
+    (input as { action: boolean }).action = true;
+    play(g, input, 3);
+    expect(g.tasks.includes(t)).toBe(false);
+    expect(g.stats.done).toBe(1);
+  });
+
+  it('Amber: reaching the IT office corner completes the task, then she leaves', () => {
+    const g = new Game(null, 12);
+    g.newGame();
+    const input = fakeInput();
+    g.spawn('amber');
+    const amber = g.npc('amber');
+    expect(amber.hidden).toBe(false);
+    const c = g.map.point('itCorner');
+    g.andy.x = c.x;
+    g.andy.y = c.y;
+    (input as { action: boolean }).action = true;
+    play(g, input, 1.5);
+    expect(g.tasks.some((k) => k.type === 'amber')).toBe(false);
+    expect(g.stats.done).toBe(1);
+    (input as { action: boolean }).action = false;
+    play(g, input, 12);
+    expect(amber.hidden).toBe(true);
+  });
+
+  it('darts: a win calms Andy and a loss winds him up', () => {
+    const darts = (win: number) => {
+      const g = new Game(null, 13);
+      g.defs.darts.winChance = win;
+      g.newGame();
+      const input = fakeInput();
+      g.spawn('darts');
+      const dave = g.npc('dave');
+      play(g, input, 10);
+      g.meters.anger = 50;
+      g.meters.bladder = g.meters.thirst = 0;
+      g.andy.x = dave.x;
+      g.andy.y = dave.y + 8;
+      (input as { action: boolean }).action = true;
+      play(g, input, 1);
+      expect(g.modal?.kind).toBe('darts');
+      (input as { action: boolean }).action = false;
+      play(g, input, 7);
+      expect(g.modal).toBeNull();
+      return g.meters.anger;
+    };
+    const before = 50;
+    try {
+      expect(darts(1)).toBeLessThan(before - 10);
+      expect(darts(0)).toBeGreaterThan(before + 5);
+    } finally {
+      new Game(null, 1).defs.darts.winChance = 0.5;
+    }
+  });
 });

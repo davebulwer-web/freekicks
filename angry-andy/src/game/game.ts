@@ -61,7 +61,10 @@ export interface Interactable {
 
 export type Modal =
   | { kind: 'car'; task: Task; car: Car }
-  | { kind: 'boss'; t: number; total: number; line: string; task: Task };
+  | { kind: 'boss'; t: number; total: number; line: string; task: Task }
+  | { kind: 'darts'; t: number; total: number; task: Task; throws: DartThrow[]; win: boolean };
+
+export interface DartThrow { who: 'andy' | 'dave'; score: number; dx: number; dy: number }
 
 export interface Toast { text: string; x: number; y: number; t: number; colour: string }
 
@@ -102,6 +105,7 @@ export class Game {
   private callTimes: number[] = [];
   private callsQueued = 0;
   private nextId = 1;
+  private amberLeave = 0;
   private carIds = 0;
   private teaProgress = 0;
   private looProgress = 0;
@@ -174,6 +178,7 @@ export class Game {
     this.intruderInside = null;
     this.near = null;
     this.result = null;
+    this.amberLeave = 0;
   }
 
   dateLabel(): string {
@@ -259,6 +264,11 @@ export class Game {
     this.updateTasks(dt);
     this.updateSpawning(dt);
 
+    if (this.amberLeave > 0 && (this.amberLeave -= dt) <= 0) this.sendAmberAway();
+    if (this.modal?.kind === 'darts') {
+      this.modal.t -= dt;
+      if (this.modal.t <= 0) this.resolveDarts();
+    }
     if (this.modal?.kind === 'boss') {
       this.modal.t -= dt;
       if (this.modal.t <= 0) {
@@ -281,6 +291,13 @@ export class Game {
     const a = this.andy;
     a.tickBubble(dt);
     if (a.hidden) return;
+    if (this.modal?.kind === 'darts') {
+      this.near = null;
+      this.holding = false;
+      a.dir = 'up';
+      a.pose = 'work';
+      return;
+    }
     this.near = this.findInteractable();
     this.holding = false;
     if (input.action && this.near) {
@@ -419,6 +436,9 @@ export class Game {
       case 'fun': return !has('fun') && this.freeNpcs((n) => n.office === 'it').length > 0;
       case 'boss': return !has('boss') && !this.modal;
       case 'shower': return !has('shower') && this.npcs.some((n) => n.id === 'lee' && n.hidden);
+      case 'invoice': return !has('invoice') && this.freeNpcs((n) => n.office === 'finance').length > 0;
+      case 'darts': return !has('darts') && !this.modal && this.freeNpcs((n) => n.id === 'dave').length > 0;
+      case 'amber': return !has('amber') && this.amberLeave <= 0 && this.npcs.some((n) => n.id === 'amber' && n.hidden);
       case 'video': return false;
     }
   }
@@ -440,6 +460,9 @@ export class Game {
       case 'fun': this.spawnFun(); break;
       case 'boss': this.spawnBoss(); break;
       case 'shower': this.spawnShower(); break;
+      case 'invoice': this.spawnInvoice(); break;
+      case 'darts': this.spawnDarts(); break;
+      case 'amber': this.spawnAmber(); break;
       case 'video': this.spawnVideo(this.dayFrac + this.tuning.videoCallWarningSeconds / this.tuning.dayLengthSeconds); break;
     }
   }
@@ -612,11 +635,150 @@ export class Game {
     });
   }
 
+  private spawnInvoice() {
+    const n = pick(this.rng, this.freeNpcs((k) => k.office === 'finance'));
+    n.busy = true;
+    n.goTo(this.map, this.map.point('itInvoice'), () => {
+      n.dir = 'right';
+      n.say('Invoices to sign, Andy!', 2.5);
+    });
+    n.say('Where is he...', 2);
+    this.baseTask('invoice', {
+      title: 'Sign invoices',
+      detail: `${n.name} needs your signature`,
+      icon: 'invoice',
+      portrait: n.id,
+      verb: 'Sign invoices',
+      npc: n,
+      target: () => ({ x: n.x, y: n.y }),
+    });
+  }
+
+  private spawnDarts() {
+    const dave = this.npc('dave');
+    dave.busy = true;
+    dave.goTo(this.map, this.map.point('dartsOche'), () => {
+      dave.dir = 'up';
+      dave.say('Fancy a game of arrows, Andy?', 3);
+    });
+    this.baseTask('darts', {
+      title: 'Darts challenge',
+      detail: 'Big Toe Dave wants a game. Win to calm down',
+      icon: 'darts',
+      portrait: 'dave',
+      verb: 'Play darts',
+      npc: dave,
+      target: () => ({ x: dave.x, y: dave.y }),
+    });
+  }
+
+  private spawnAmber() {
+    const amber = this.npc('amber');
+    const start = this.map.point('outsideRight');
+    amber.hidden = false;
+    amber.busy = true;
+    amber.x = start.x;
+    amber.y = start.y;
+    amber.goTo(this.map, this.map.point('amberSpot'), () => {
+      amber.dir = 'down';
+      amber.activity = 'phone';
+    });
+    this.baseTask('amber', {
+      title: "Amber's outside",
+      detail: 'Get to the IT office corner before she goes',
+      icon: 'window',
+      portrait: 'amber',
+      verb: 'Lean casually in the corner',
+      radius: 14,
+      target: () => this.map.point('itCorner'),
+    });
+  }
+
+  private sendAmberAway() {
+    this.amberLeave = 0;
+    const amber = this.npc('amber');
+    if (amber.hidden) return;
+    amber.activity = null;
+    amber.goTo(this.map, this.map.point('outsideRight'), () => { amber.hidden = true; amber.busy = false; });
+  }
+
+  /** Three darts each, revealed in turn. The winner is decided first, then the scores are made to fit. */
+  private makeDarts(): { throws: DartThrow[]; win: boolean } {
+    const win = this.rng() < (this.defs.darts.winChance ?? 0.5);
+    const one = () => {
+      const r = this.rng();
+      if (r < 0.08) return 0;
+      if (r < 0.14) return this.rng() < 0.3 ? 50 : 25;
+      const seg = 1 + Math.floor(this.rng() * 20);
+      const m = this.rng();
+      return seg * (m < 0.7 ? 1 : m < 0.85 ? 2 : 3);
+    };
+    let a: number[], d: number[];
+    const sum = (k: number[]) => k.reduce((x, y) => x + y, 0);
+    do { a = [one(), one(), one()]; d = [one(), one(), one()]; } while (sum(a) === sum(d));
+    if ((sum(a) > sum(d)) !== win) [a, d] = [d, a];
+    const jit = () => (this.rng() - 0.5) * 9;
+    const throws: DartThrow[] = [];
+    for (let i = 0; i < 3; i++) {
+      throws.push({ who: 'andy', score: a[i], dx: jit(), dy: jit() });
+      throws.push({ who: 'dave', score: d[i], dx: jit(), dy: jit() });
+    }
+    return { throws, win };
+  }
+
+  /** How many darts have landed so far in the current game. */
+  dartsShown(m: Extract<Modal, { kind: 'darts' }>): number {
+    return Math.min(6, Math.floor(((m.total - m.t) / m.total) * 7.5));
+  }
+
+  private resolveDarts() {
+    const m = this.modal as Extract<Modal, { kind: 'darts' }>;
+    this.modal = null;
+    const d = this.defs.darts;
+    const dave = this.npc('dave');
+    const a = this.andy;
+    this.stats.done++;
+    if (m.win) {
+      addAnger(this.meters, -(d.calmOnWin ?? 14));
+      this.score += d.score;
+      this.stats.score += d.score;
+      this.sfx('done');
+      this.toast(`Andy wins! +${d.score}`, a, '#ff6');
+      if (this.rng() < 0.5) a.say('Game shot!', 2.4, 'andy');
+      else this.sayCatchphrase();
+      dave.say('Best of three?', 2.4);
+    } else {
+      addAnger(this.meters, d.angerOnLoss ?? 10);
+      this.sfx('wrong');
+      this.toast(`Dave wins. +${d.angerOnLoss ?? 10} anger`, a, '#f88');
+      a.say(this.grumbles.next(), 2.4, 'andy');
+      dave.say('Get in! Big Toe Dave!', 2.4);
+    }
+    dave.goHome(this.map);
+  }
+
   /** Andy has finished holding the action on a task. */
   private finishHold(t: Task) {
     if (t.type === 'car') {
       this.modal = { kind: 'car', task: t, car: t.car! };
       this.sfx('click');
+      return;
+    }
+    if (t.type === 'darts') {
+      const spot = this.map.point('dartsAndy');
+      this.andy.x = spot.x;
+      this.andy.y = spot.y;
+      this.andy.dir = 'up';
+      t.npc!.dir = 'up';
+      const total = this.defs.darts.gameSeconds ?? 6;
+      this.modal = { kind: 'darts', t: total, total, task: t, ...this.makeDarts() };
+      this.tasks = this.tasks.filter((k) => k !== t);
+      this.sfx('click');
+      return;
+    }
+    if (t.type === 'amber') {
+      this.completeTask(t, pick(this.rng, ['Ahh, lovely weather today.', 'Just checking the window seals.', 'Nice view from here.']));
+      this.amberLeave = 4;
       return;
     }
     if (t.type === 'boss') {
@@ -683,6 +845,7 @@ export class Game {
     const msgs: Record<EventType, string> = {
       car: 'Unchecked car!', toilet: 'They made a mess!', rant: 'Missed the rant', fun: 'They got away with it',
       video: 'Missed the call!', boss: 'Boss is NOT happy', shower: 'Lee used all the hot water',
+      invoice: 'Invoices not signed', darts: 'Dave is sulking', amber: 'Missed Amber',
     };
     this.toast(`${msgs[t.type]} +${d.angerOnFail} anger`, this.andy, '#f88');
     if (!this.andy.hidden) this.andy.say(this.grumbles.next(), 2, 'andy');
@@ -692,13 +855,16 @@ export class Game {
       t.car.leaveTimer = range(this.rng, 30, 70);
     }
     if (t.type === 'video') this.deskScreens.andy = 'work';
+    if (t.type === 'amber') this.sendAmberAway();
     this.releaseNpcs(t, false);
   }
 
   private releaseNpcs(t: Task, scolded: boolean) {
     for (const n of [t.npc, t.npc2]) {
       if (!n) continue;
-      if (scolded && t.type !== 'rant') n.say(this.excuses.next(), 2);
+      if (t.type === 'invoice') n.say(scolded ? 'Thanks, Andy!' : "I'll come back later...", 2.2);
+      else if (t.type === 'darts') n.say('Suit yourself...', 2.2);
+      else if (scolded && t.type !== 'rant') n.say(this.excuses.next(), 2);
       if (scolded && t.type === 'rant') n.say(pick(this.rng, ['Sorry Andy...', 'Yes Andy.', 'Won\'t happen again!']), 2.4);
       if (n.deskId && this.deskScreens[n.deskId]) delete this.deskScreens[n.deskId];
       if (this.intruderInside === n) this.intruderInside = null;
