@@ -97,6 +97,9 @@ export const DEFAULT_MANIFEST: Manifest = {
     target: 'textures/target.png',
     floodlight: 'textures/floodlight.png',
     ringIcons: 'textures/ring_icons.png',
+    /** Title splash key art (16:9) and the transparent logo used on the menu. */
+    title: 'ui/title.png',
+    logo: 'ui/logo.png',
   },
   hoardings: [
     'hoardings/hoarding_01.png',

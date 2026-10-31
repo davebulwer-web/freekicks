@@ -6,6 +6,7 @@ import type { KickResult } from '../game/Session';
 import { storage } from '../game/storage';
 import { Teams } from '../game/Teams';
 import { el, shield } from './dom';
+import { howToPlay } from './howToPlay';
 import { drawKitPreview } from './kitPreview';
 
 export const MODES = modesJson as ModeConfig[];
@@ -15,7 +16,7 @@ export interface Settings {
   autoReplay: boolean;
 }
 
-/** Full-screen menus: title, teams & kit editor, high scores, game over. */
+/** Full-screen menus: title splash, main menu, how to play, teams & kit editor, high scores, game over. */
 export class Menus {
   readonly root: HTMLElement;
   onPlay: (mode: ModeConfig) => void = () => {};
@@ -38,6 +39,35 @@ export class Menus {
     this.root.append(el('div.screen', {}, children));
   }
 
+  /** Logo image from the manifest, or the text wordmark if the art is missing. */
+  private logo(cls = 'logo'): HTMLElement {
+    const img = this.assets.images.get(this.assets.manifest.textures.logo);
+    if (!img) return el('h1.title', { html: 'DIP <span>&amp;</span> DRIVE' });
+    const src = img instanceof HTMLImageElement ? img.src : img.toDataURL();
+    return el(`img.${cls}`, { src, alt: 'Dip & Drive' });
+  }
+
+  /** Launch screen: full-screen key art with a pulsing TAP TO START. */
+  title(onStart: () => void) {
+    const art = this.assets.images.get(this.assets.manifest.textures.title);
+    const src = art instanceof HTMLImageElement ? art.src : art?.toDataURL();
+    this.root.innerHTML = '';
+    this.root.style.display = '';
+    const splash = el(
+      'div.title-splash',
+      { onclick: () => { splash.classList.add('leaving'); setTimeout(onStart, 280); } },
+      [src ? null : this.logo(), el('div.tap-start', { text: 'TAP TO START' }), el('div.version', { text: `v${__APP_VERSION__}` })],
+    );
+    if (src) splash.style.backgroundImage = `url(${src})`;
+    this.root.append(splash);
+  }
+
+  howToPlay(page = 0) {
+    this.root.innerHTML = '';
+    this.root.style.display = '';
+    this.root.append(howToPlay(MODES, page, () => this.main()));
+  }
+
   main() {
     const sel = Teams.selection();
     const home = Teams.get(sel.home), away = Teams.get(sel.away);
@@ -45,10 +75,11 @@ export class Menus {
     this.screen(
       el('div.main-menu', {}, [
         el('div.main-left', {}, [
-          el('h1.title', { html: 'FREE <span>KICKS</span>' }),
+          this.logo(),
           el('div.subtitle', { text: `${home.name} v ${away.name}` }),
           preview,
           el('div.side-buttons', {}, [
+            el('button.btn.small.how', { text: 'HOW TO PLAY', onclick: () => this.howToPlay() }),
             el('button.btn.small', { text: 'TEAMS & KITS', onclick: () => this.teams() }),
             el('button.btn.small', { text: 'HIGH SCORES', onclick: () => this.highScores(MODES[0].id) }),
             el('button.btn.small', { text: 'SETTINGS', onclick: () => this.settingsScreen() }),
@@ -227,7 +258,7 @@ export class Menus {
   }
 
   loading(done: number, total: number) {
-    this.screen(el('h1.title', { html: 'FREE <span>KICKS</span>' }), el('div.subtitle', { text: `Loading ${done}/${total}…` }));
+    this.screen(el('h1.title', { html: 'DIP <span>&amp;</span> DRIVE' }), el('div.subtitle', { text: `Loading ${done}/${total}…` }));
   }
 }
 

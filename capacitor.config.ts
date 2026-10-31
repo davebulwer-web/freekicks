@@ -1,11 +1,11 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.freekicks.game',
-  appName: 'Free Kicks',
+  appId: 'com.dipanddrive.game',
+  appName: 'Dip & Drive',
   webDir: 'dist',
   android: {
-    backgroundColor: '#0b3d1c',
+    backgroundColor: '#1b0826',
   },
 };
 

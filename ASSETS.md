@@ -92,6 +92,8 @@ The goalkeeper and referee use the same sheets in their own kit colours. If you'
 | pitchSnow | `textures/pitch_snow.png` | Snow overlay with the same extent. Alpha is snow thickness. Keep it below about 85% so the turf shows through. Pitch markings are always drawn on top. |
 | target | `textures/target.png` | Round board for Target Challenge (square image, circle-masked). |
 | floodlight | `textures/floodlight.png` | Lamp panel on the floodlight towers (Night Match). |
+| title | `ui/title.png` | Title splash key art, 16:9 (1920×1080). Shown full-screen on launch with TAP TO START over the bottom. |
+| logo | `ui/logo.png` | Transparent DIP & DRIVE wordmark, used on the main menu. |
 | ringIcons | `textures/ring_icons.png` | Shot ring icons: 4 square cells left to right (height, direction, swerve, dip), drawn upright with a transparent background. |
 
 ## Shot ring
@@ -114,3 +116,14 @@ The aiming control is a glowing arch drawn around the ball, always facing the ca
 ## Audio
 
 `manifest.audio` has slots for `kick`, `whistle`, `post`, `net`, `bounce`, `cheer`, `groan`, `crowd` and `splash`. Leave a slot empty to use the synthesised placeholder, or set a path such as `"audio/kick.ogg"` (relative to `public/assets/`) to use your own file.
+
+## Branding (logo, title art, app icon, launch splash)
+
+`npm run branding` (`tools/branding/`) generates all of these:
+
+- **Logo:** the wordmark, drawn in Luckiest Guy and Lilita One, with the dip swoosh.
+- **Title key art:** rendered by the game itself around a real simulated dipping free kick. A clean copy without the logo is saved to `art/branding/key_art_clean.png`.
+- **App icon:** a 1024 px master at `art/branding/icon_1024.png`, plus every Android launcher size (legacy, round and adaptive foreground/background) and `public/icon-512.png` / `public/favicon.png`.
+- **Android launch splash:** every landscape and portrait density.
+
+To use your own art, replace the PNGs and don't re-run the script, or edit `tools/branding/branding-entry.ts` and re-run it.

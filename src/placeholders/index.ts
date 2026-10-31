@@ -361,7 +361,7 @@ export function generateRingIcons(): HTMLCanvasElement {
 
 const ADS: [string, string, string][] = [
   ['YOUR AD HERE', '#d01f2e', '#ffffff'],
-  ['FREE KICKS', '#0d2b6b', '#ffd200'],
+  ['DIP & DRIVE', '#2a0f36', '#f3d8ff'],
   ['SPONSOR', '#ffd200', '#111111'],
   ['BEND IT!', '#111111', '#3fe05a'],
   ['TOP BINS', '#ffffff', '#d01f2e'],

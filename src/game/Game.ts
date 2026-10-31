@@ -69,7 +69,12 @@ export class Game {
     this.hud.onReplaySkip = () => this.endReplay();
     this.hud.onReplayCamera = () => this.cycleReplayCamera();
     this.hud.onResetView = () => this.world.director.resetOrbit();
+    // Attract-mode match runs behind the menu; the title splash covers it until the first tap.
     this.showMenu();
+    this.menus.title(() => {
+      this.sfx.unlock();
+      this.menus.main();
+    });
   }
 
   private applySettings(s: Settings) {

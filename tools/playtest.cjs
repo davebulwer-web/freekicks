@@ -25,9 +25,20 @@ async function main() {
   const wait = (ms) => page.waitForTimeout(ms);
 
   await page.goto(url);
+  await page.waitForSelector('.title-splash', { timeout: 60000 });
+  await wait(1000);
+  await shot('00-title');
+  await page.click('.title-splash');
   await page.waitForSelector('.mode-card', { timeout: 60000 });
   await wait(2500);
   await shot('01-menu');
+  await page.click('text=HOW TO PLAY');
+  for (let i = 0; i < 8; i++) {
+    await wait(200);
+    await shot(`01-howto-${i + 1}`);
+    await page.click('.htp-nav .btn >> nth=1');
+  }
+  await page.waitForSelector('.mode-card', { timeout: 10000 });
   await page.click('text=TEAMS & KITS');
   await wait(300);
   await page.click('text=EDIT KIT >> nth=0');

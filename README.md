@@ -1,4 +1,6 @@
-# Free Kicks
+![Dip & Drive](public/assets/ui/title.png)
+
+# Dip & Drive
 
 A free-kick arcade game for Android in the style of *Roberto Baggio's Magical Kicks*, built with **TypeScript + Three.js** and wrapped as an Android app with **Capacitor**.
 
@@ -45,7 +47,7 @@ npm run playtest
 
 ## Android APK
 
-**CI:** every push runs `.github/workflows/android.yml`, which tests, builds and uploads `freekicks-debug-apk` (find it on the run's page in the Actions tab). Install it on a phone with "install unknown apps" enabled.
+**CI:** every push runs `.github/workflows/android.yml`, which tests, builds and uploads `dip-and-drive-debug-apk` (find it on the run's page in the Actions tab). Install it on a phone with "install unknown apps" enabled.
 
 **Locally** (needs JDK 21 and the Android SDK, e.g. via Android Studio):
 

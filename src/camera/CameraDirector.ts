@@ -20,7 +20,7 @@ const GOAL = new Vector3(0, 1, 0);
  */
 export class CameraDirector {
   readonly camera: PerspectiveCamera;
-  mode: 'broadcast' | 'preset' | 'free' = 'broadcast';
+  mode: 'broadcast' | 'preset' | 'free' | 'fixed' = 'broadcast';
   angle: ReplayAngle = 'behind-goal';
   /** User orbit offsets applied on top of the current mode. */
   yawOffset = 0;
@@ -63,6 +63,15 @@ export class CameraDirector {
   setPreset(angle: ReplayAngle) {
     this.mode = 'preset';
     this.angle = angle;
+    this.resetOrbit();
+    this.snap = true;
+  }
+
+  /** Lock the camera to an exact position and look-at point (staged shots such as title art). */
+  setFixed(pos: Vector3, target: Vector3) {
+    this.mode = 'fixed';
+    this.pos.copy(pos);
+    this.target.copy(target);
     this.resetOrbit();
     this.snap = true;
   }
@@ -117,7 +126,7 @@ export class CameraDirector {
 
   update(dt: number, ball: Vector3, keeper: Vector3, live: boolean) {
     if (this.mode === 'broadcast') this.broadcast(ball, live);
-    else this.preset(ball, keeper);
+    else if (this.mode !== 'fixed') this.preset(ball, keeper);
 
     // Apply orbit + zoom around the target.
     const off = this.pos.clone().sub(this.target);

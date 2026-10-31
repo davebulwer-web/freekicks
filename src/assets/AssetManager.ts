@@ -4,8 +4,6 @@ import { generatePlaceholder } from '../placeholders';
 import { DEFAULT_MANIFEST, mergeManifest, type Manifest } from './manifest';
 import { DEFAULT_STADIUM, type StadiumLayout } from './stadium';
 
-const BASE = './assets/';
-
 export type ImageSource = HTMLImageElement | HTMLCanvasElement;
 
 /**
@@ -19,10 +17,13 @@ export class AssetManager {
   private textures = new Map<string, Texture>();
   readonly placeholdersUsed: string[] = [];
 
+  /** URL prefix for public/assets (tools pages served from elsewhere pass '/assets/'). */
+  constructor(private base = './assets/') {}
+
   async load(onProgress?: (done: number, total: number) => void): Promise<void> {
-    const m = await fetchJson<Partial<Manifest>>(BASE + 'manifest.json');
+    const m = await fetchJson<Partial<Manifest>>(this.base + 'manifest.json');
     if (m) this.manifest = mergeManifest(DEFAULT_MANIFEST, m);
-    const s = await fetchJson<Partial<StadiumLayout>>(BASE + 'stadium.json');
+    const s = await fetchJson<Partial<StadiumLayout>>(this.base + 'stadium.json');
     if (s) this.stadium = { ...DEFAULT_STADIUM, ...s };
 
     const paths = new Set<string>();
@@ -35,7 +36,7 @@ export class AssetManager {
     let done = 0;
     await Promise.all(
       [...paths].map(async (p) => {
-        const img = await loadImage(BASE + p).catch(() => null);
+        const img = await loadImage(this.base + p).catch(() => null);
         if (img) this.images.set(p, img);
         else {
           const c = generatePlaceholder(p, this.manifest);

@@ -1,4 +1,4 @@
-package com.freekicks.game;
+package com.dipanddrive.game;
 
 import android.os.Bundle;
 import android.view.WindowManager;
