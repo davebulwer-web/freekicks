@@ -48,6 +48,20 @@ npm run smoke
 
 `npm test` runs the unit tests, which include a headless simulation of a full day. `npm run smoke` drives the real page in headless Chromium and saves screenshots to `smoke-output/`. It needs Playwright.
 
+## Share it with colleagues
+
+```bash
+npm run package
+```
+
+This makes **one file**, `release/AngryAndy.html` (about 0.5 MB), with the game, the pictures and the fonts all inside it.
+
+- Send the file by email, Teams or SharePoint, or put it on a shared drive.
+- Colleagues download it and **double-click it**. It opens in their web browser (Chrome, Edge, Firefox or Safari) and plays straight away. There's nothing to install, and it works offline.
+- High scores are saved separately for each person, in their own browser.
+- Some email systems block `.html` attachments. If yours does, zip the file first or share it through Teams or SharePoint.
+- After you change the game, run `npm run package` again and send the new file.
+
 ## Changing things
 
 Everything you'd want to tweak is in `src/data/`:

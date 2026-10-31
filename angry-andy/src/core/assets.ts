@@ -17,8 +17,12 @@ export class Assets {
   constructor(private readonly base = 'assets/') {}
 
   async load(onProgress?: (done: number, total: number) => void): Promise<void> {
-    const res = await fetch(this.base + 'manifest.json');
-    this.manifest = (await res.json()) as Manifest;
+    // The single-file package (tools/package-single.mjs) embeds everything, because a
+    // double-clicked file:// page is not allowed to fetch files next to it.
+    const embed = (window as unknown as { __ANDY_EMBED?: { manifest: Manifest; files: Record<string, string> } }).__ANDY_EMBED;
+    if (embed) this.manifest = embed.manifest;
+    else this.manifest = (await (await fetch(this.base + 'manifest.json')).json()) as Manifest;
+    const src = (f: string) => embed?.files[f] ?? this.base + f;
     const m = this.manifest;
     const files = new Set<string>([m.tiles.file, m.objects.file, m.cars.file, m.icons.file, ...Object.values(m.portraits)]);
     for (const c of Object.values(m.characters)) [c.file, c.angry, c.furious].forEach((f) => f && files.add(f));
@@ -34,7 +38,7 @@ export class Assets {
               resolve();
             };
             img.onerror = () => reject(new Error(`Could not load ${this.base + f}`));
-            img.src = this.base + f;
+            img.src = src(f);
           }),
       ),
     );
