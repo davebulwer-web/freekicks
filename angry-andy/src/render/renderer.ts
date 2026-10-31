@@ -1,7 +1,7 @@
 import type { Assets } from '../core/assets';
 import type { Input } from '../core/input';
 import type { Audio } from '../core/audio';
-import { Game, carModalButtons, type Task } from '../game/game';
+import { Game, modalButtons, type Task } from '../game/game';
 import type { Person } from '../entities/person';
 import type { Car } from '../entities/car';
 import { MOODS, moodIndex } from '../game/meters';
@@ -169,6 +169,15 @@ export class Renderer {
         draw: () => {
           obj('desk', d.x * ts, d.y * ts);
           obj(`screen_${this.screenFor(g, d.id)}`, d.x * ts + 10, d.y * ts - 8 + 1);
+          if (d.id === 'andy') {
+            const ringing = g.tasks.some((t) => t.type === 'phone' && t.variant === 'desk');
+            const shake = ringing ? Math.round(Math.sin(this.t * 40)) : 0;
+            obj('deskphone', d.x * ts + 21 + shake, d.y * ts + 1);
+            if (ringing && Math.floor(this.t * 4) % 2 === 0) {
+              ctx.fillStyle = '#ff4a3a';
+              for (const [dx, dy] of [[19, -1], [18, 2], [32, -1], [33, 2]]) ctx.fillRect(d.x * ts + dx, d.y * ts + dy, 1, 2);
+            }
+          }
         },
       });
     }
@@ -180,6 +189,10 @@ export class Renderer {
     for (const it of items) it.draw();
 
     if (g.modal?.kind === 'darts') this.drawDarts(g, obj);
+    if (!g.andy.hidden && g.tasks.some((t) => t.type === 'phone' && t.variant === 'mobile')) {
+      const buzz = Math.round(Math.sin(this.t * 50));
+      this.icon('mobile', g.andy.x + 6 + buzz, g.andy.y - 34);
+    }
 
     // task markers
     for (const { task, pos } of g.liveTargets()) this.drawMarker(task, pos);
@@ -491,6 +504,7 @@ export class Renderer {
     if (g.modal?.kind === 'car') this.drawCarModal(g);
     if (g.modal?.kind === 'boss') this.drawBossModal(g);
     if (g.modal?.kind === 'darts') this.drawDartsBoard(g);
+    if (g.modal?.kind === 'phone') this.drawPhoneModal(g);
     if (g.screen === 'title') this.drawTitle(g);
     if (g.screen === 'paused') this.drawCentre(['PAUSED', '', 'Press P or tap to carry on']);
     if (g.screen === 'dayEnd') this.drawDayEnd(g);
@@ -560,13 +574,47 @@ export class Renderer {
       ctx.fillText(`Name:         ${p.name}`, 240, 234);
       ctx.fillText(`Valid until:  ${p.expires ? fmtDate(p.expires) : '-'}`, 240, 256);
     }
-    const b = carModalButtons();
+    const b = modalButtons();
     this.button(b.allow, 'ALLOW  [A]', '#2a8a3a');
     this.button(b.deny, 'SEND AWAY [D]', '#b03030');
     ctx.textAlign = 'center';
     ctx.font = `10px ${FONT}`;
     ctx.fillStyle = C.dim;
     ctx.fillText('Plate must match and the date must not have passed.', 360, 298);
+  }
+
+  private drawPhoneModal(g: Game) {
+    const ctx = this.ctx;
+    const m = g.modal as Extract<typeof g.modal, { kind: 'phone' }>;
+    const d = g.defs.phone;
+    this.dim(0.55);
+    this.box(170, 110, 380, 254);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.font = `12px ${TITLE_FONT}`;
+    ctx.fillStyle = C.warn;
+    ctx.fillText('INCOMING CALL', 360, 122);
+    this.icon(m.task.variant === 'mobile' ? 'mobile' : 'phone', 250, 120);
+    this.portrait(m.caller.id, 190, 150, 48);
+    ctx.textAlign = 'left';
+    ctx.font = `16px ${FONT}`;
+    ctx.fillStyle = C.text;
+    ctx.fillText(m.caller.name, 250, 154);
+    ctx.font = `12px ${FONT}`;
+    ctx.fillStyle = C.dim;
+    ctx.fillText(m.task.variant === 'mobile' ? 'on your mobile' : 'on the desk phone', 250, 172);
+    ctx.fillStyle = '#f2efe6';
+    ctx.fillRect(190, 210, 340, 78);
+    ctx.fillStyle = '#1a1420';
+    ctx.font = `17px ${FONT}`;
+    wrap(ctx, `"${m.request}"`, 320).slice(0, 4).forEach((l, i) => ctx.fillText(l, 200, 218 + i * 17));
+    const b = modalButtons();
+    this.button(b.allow, 'BRUSH OFF [A]', '#2a8a3a');
+    this.button(b.deny, 'LOG TICKET [D]', '#2a5ab0');
+    ctx.textAlign = 'center';
+    ctx.font = `11px ${FONT}`;
+    ctx.fillStyle = C.dim;
+    ctx.fillText(`Brush-offs today: ${g.brushOffsToday} of ${d.brushOffsBeforeBoss ?? 3} before the boss hears about it`, 360, 298);
   }
 
   private button(r: { x: number; y: number; w: number; h: number }, label: string, col: string) {
@@ -700,7 +748,7 @@ export class Renderer {
     const lines = [
       'Andy is the IT Manager. He is permanently annoyed.',
       'Deal with each task before its timer runs out or his ANGER rises.',
-      'Check cars, chase people out of the loo, rant at the usual suspects,',
+      'Answer the phone, check cars, chase people out of the loo, rant at people,',
       'stop the IT lads having fun, sign invoices, take video calls, beat',
       'Big Toe Dave at darts and go upstairs when the boss calls.',
       'Keep BLADDER (loo) and THIRST (tea in the kitchen) under control.',

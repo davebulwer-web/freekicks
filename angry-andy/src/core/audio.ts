@@ -1,5 +1,5 @@
 /** Placeholder synthesised sound effects (WebAudio). Swap in samples later if you like. */
-export type Sfx = 'step' | 'alert' | 'done' | 'fail' | 'rant' | 'tea' | 'flush' | 'car' | 'boss' | 'click' | 'meltdown' | 'dayEnd' | 'wrong';
+export type Sfx = 'step' | 'alert' | 'done' | 'fail' | 'rant' | 'tea' | 'flush' | 'car' | 'boss' | 'click' | 'meltdown' | 'dayEnd' | 'wrong' | 'ring';
 
 export class Audio {
   private ctx: AudioContext | null = null;
@@ -60,6 +60,7 @@ export class Audio {
     if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
     switch (s) {
       case 'step': this.tone(90, 0.04, 'square', 0.02); break;
+      case 'ring': for (let i = 0; i < 12; i++) this.tone(i % 2 ? 1100 : 880, 0.035, 'square', 0.04, (i < 6 ? 0 : 0.12) + i * 0.035); break;
       case 'click': this.tone(660, 0.05, 'square', 0.05); break;
       case 'alert': this.tone(880, 0.08, 'square', 0.06); this.tone(1175, 0.1, 'square', 0.06, 0.1); break;
       case 'done': [523, 659, 784].forEach((f, i) => this.tone(f, 0.12, 'square', 0.06, i * 0.07)); break;

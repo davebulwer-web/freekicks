@@ -38,7 +38,7 @@ A single row of **16x16 px** tiles, in this order: `wall_top`, `wall_front`, `do
 
 Furniture packed in one row. Each frame's position and size, and its draw offset `ox`/`oy` from its tile's top-left, are in `manifest.json` under `objects.frames`. If you change sizes, edit those numbers.
 
-`desk` (32x24, 2 tiles wide, monitor screen at x10-21, y1-8), the monitor screens `screen_off`, `screen_work`, `screen_game`, `screen_football` and `screen_call` (12x8 each, drawn over the desk monitor), `rack`, `counter`, `kettle`, `fridge`, `toilet`, `sink`, `shower` (32x32), `printer`, `cooler`, `plant`, `filing`, `beanbag`, `bin`, `whiteboard`, `dartboard` (16x16, hung on the IT Office's top wall), `dart` (3x7, used for the throws), `mess`, `out_of_order`, `stairs_up`.
+`desk` (32x24, 2 tiles wide, monitor screen at x10-21, y1-8), the monitor screens `screen_off`, `screen_work`, `screen_game`, `screen_football` and `screen_call` (12x8 each, drawn over the desk monitor), `rack`, `counter`, `kettle`, `fridge`, `toilet`, `sink`, `shower` (32x32), `printer`, `cooler`, `plant`, `filing`, `beanbag`, `bin`, `whiteboard`, `dartboard` (16x16, hung on the IT Office's top wall), `dart` (3x7, used for the throws), `deskphone` (10x8, sits on Andy's desk and shakes when it rings), `mess`, `out_of_order`, `stairs_up`.
 
 ## Cars: `sprites/cars.png`
 
@@ -46,7 +46,7 @@ Furniture packed in one row. Each frame's position and size, and its draw offset
 
 ## UI icons: `ui/icons.png`
 
-A single row of **16x16 px** icons: `car`, `toilet`, `rant`, `fun`, `video`, `boss`, `shower`, `tea`, `bladder`, `check`, `cross`, `clock`, `warning`, `sound_on`, `sound_off`, `star`, `invoice`, `darts`, `window`.
+A single row of **16x16 px** icons: `car`, `toilet`, `rant`, `fun`, `video`, `boss`, `shower`, `tea`, `bladder`, `check`, `cross`, `clock`, `warning`, `sound_on`, `sound_off`, `star`, `invoice`, `darts`, `window`, `phone`, `mobile`.
 
 ## Fonts and sound
 

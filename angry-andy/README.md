@@ -11,6 +11,7 @@ A small top-down pixel-art browser game. You are **Andy**, a permanently annoyed
   - **IT staff having fun**: Big Toe Dave, PJ or Pavan are gaming, watching football, chatting, or lounging in the server room. Stop them.
   - **Sign invoices**: a Finance lady walks over to the IT Office with invoices. Find her and hold to sign.
   - **Darts challenge**: Big Toe Dave challenges Andy at the dartboard (top right of the IT Office). Three darts each, and the result is random. A win calms Andy down a lot; a loss winds him up.
+  - **Phone calls**: the desk phone on Andy's desk or his mobile rings with daft requests ("I poured coffee in my laptop."). The desk phone only works at his desk; the mobile can be answered anywhere. Then choose: **Brush off** calms Andy, but every third brush-off in a day gets him summoned by the boss. **Log a ticket** is safe but winds him up a little. An unanswered call annoys him.
   - **Amber's outside**: Amber from the office next door stands on the pavement outside the IT Office. Get Andy to the bottom-left corner of the IT Office before she wanders off.
   - **Video call**: these are booked ahead and shown as "Starts in..." Be at your desk when one starts, then hold to sit through it while other tasks keep ticking.
   - **Boss wants you**: go to the stairs. Andy is upstairs for a few seconds, and the timers keep running while he's away.
@@ -54,6 +55,7 @@ Everything you'd want to tweak is in `src/data/`:
 | File | What it holds |
 |---|---|
 | `catchphrases.json` | Andy's catchphrases, his grumbles, people's excuses and the boss's lines. Add as many as you like. |
+| `phonecalls.json` | The requests people ring Andy with, his brush-off lines and his 'I'll log a ticket' lines. Add as many as you like. |
 | `tuning.json` | Day length, walking speeds, how fast bladder and thirst fill, how long tea and the loo take, difficulty ramp. |
 | `events.json` | Each task type: how often it appears, time limit, hold time, anger penalty, calm reward, points. |
 | `characters.json` | The cast: names, desks, who can be ranted at and why, and the looks used to draw placeholder art. |

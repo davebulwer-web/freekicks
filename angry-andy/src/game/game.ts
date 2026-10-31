@@ -3,6 +3,7 @@ import charactersJson from '../data/characters.json';
 import tuningJson from '../data/tuning.json';
 import eventsJson from '../data/events.json';
 import phrasesJson from '../data/catchphrases.json';
+import callsJson from '../data/phonecalls.json';
 import { TileMap, type MapData, type Vec } from '../world/map';
 import { makeRng, pick, range, type Rng } from '../core/rng';
 import { Andy, Npc } from '../entities/person';
@@ -47,6 +48,8 @@ export interface Task {
   npc2?: Npc;
   car?: Car;
   variant?: string;
+  /** Who is on the other end of a phone call. */
+  caller?: Npc;
 }
 
 export interface Interactable {
@@ -62,6 +65,7 @@ export interface Interactable {
 export type Modal =
   | { kind: 'car'; task: Task; car: Car }
   | { kind: 'boss'; t: number; total: number; line: string; task: Task }
+  | { kind: 'phone'; task: Task; caller: Npc; request: string }
   | { kind: 'darts'; t: number; total: number; task: Task; throws: DartThrow[]; win: boolean };
 
 export interface DartThrow { who: 'andy' | 'dave'; score: number; dx: number; dy: number }
@@ -106,6 +110,11 @@ export class Game {
   private callsQueued = 0;
   private nextId = 1;
   private amberLeave = 0;
+  brushOffsToday = 0;
+  private ringT = 0;
+  private requests: PhraseRotator;
+  private brushOffs: PhraseRotator;
+  private ticketLines: PhraseRotator;
   private carIds = 0;
   private teaProgress = 0;
   private looProgress = 0;
@@ -123,6 +132,9 @@ export class Game {
     this.grumbles = new PhraseRotator(phrasesJson.grumbles, this.rng);
     this.excuses = new PhraseRotator(phrasesJson.excuses, this.rng);
     this.bossLines = new PhraseRotator(phrasesJson.boss, this.rng);
+    this.requests = new PhraseRotator(callsJson.requests, this.rng);
+    this.brushOffs = new PhraseRotator(callsJson.brushOffs, this.rng);
+    this.ticketLines = new PhraseRotator(callsJson.ticketLines, this.rng);
     try { this.best = Number(localStorage.getItem('andy.best') || 0); } catch { /* storage blocked */ }
     this.resetWorld();
   }
@@ -145,6 +157,7 @@ export class Game {
     this.spawner = new Spawner(this.rng, this.tuning, this.defs, this.day);
     this.callTimes = this.spawner.scheduleCalls();
     this.callsQueued = 0;
+    this.brushOffsToday = 0;
     this.screen = 'playing';
     this.banner = { text: `DAY ${this.day} - ${this.dateLabel()}`, t: 3 };
     this.andy.say(this.day === 1 ? 'Right. Another day...' : 'Back again. Marvellous.', 3, 'andy');
@@ -239,6 +252,10 @@ export class Game {
     if (this.modal?.kind === 'car') {
       this.updateCarModal(input);
       return; // world pauses while Andy reads the permit
+    }
+    if (this.modal?.kind === 'phone') {
+      this.updatePhoneModal(input);
+      return; // and while he's on the phone
     }
 
     this.clock += dt;
@@ -346,7 +363,8 @@ export class Game {
     if (dist(a, kettle) <= r && this.meters.thirst >= this.tuning.needMinimumToUse)
       cands.push({ key: 'tea', label: 'Make tea', pos: kettle, hold: this.tuning.teaSeconds, progress: this.teaProgress, kind: 'tea' });
     if (!cands.length) return null;
-    cands.sort((p, q) => dist(a, p.pos) - dist(a, q.pos));
+    const rank = (c: Interactable) => (c.task?.type === 'phone' && c.task.variant === 'mobile' ? 1e6 : dist(a, c.pos));
+    cands.sort((p, q) => rank(p) - rank(q));
     return cands[0];
   }
 
@@ -410,6 +428,10 @@ export class Game {
         continue;
       }
       t.timeLeft -= dt;
+      if (t.type === 'phone' && (this.ringT -= dt) <= 0) {
+        this.ringT = 1.3;
+        this.sfx('ring');
+      }
       if (t.timeLeft <= 0) this.failTask(t);
     }
   }
@@ -439,6 +461,7 @@ export class Game {
       case 'invoice': return !has('invoice') && this.freeNpcs((n) => n.office === 'finance').length > 0;
       case 'darts': return !has('darts') && !this.modal && this.freeNpcs((n) => n.id === 'dave').length > 0;
       case 'amber': return !has('amber') && this.amberLeave <= 0 && this.npcs.some((n) => n.id === 'amber' && n.hidden);
+      case 'phone': return !has('phone') && !this.modal && this.callers().length > 0;
       case 'video': return false;
     }
   }
@@ -463,6 +486,7 @@ export class Game {
       case 'invoice': this.spawnInvoice(); break;
       case 'darts': this.spawnDarts(); break;
       case 'amber': this.spawnAmber(); break;
+      case 'phone': this.spawnPhone(); break;
       case 'video': this.spawnVideo(this.dayFrac + this.tuning.videoCallWarningSeconds / this.tuning.dayLengthSeconds); break;
     }
   }
@@ -702,6 +726,65 @@ export class Game {
     amber.goTo(this.map, this.map.point('outsideRight'), () => { amber.hidden = true; amber.busy = false; });
   }
 
+  private callers(): Npc[] {
+    return this.npcs.filter((n) => n.deskId && n.office !== 'it' && !n.hidden);
+  }
+
+  private spawnPhone() {
+    const caller = pick(this.rng, this.callers());
+    const mobile = this.rng() < (this.defs.phone.mobileChance ?? 0.5);
+    const seat = this.map.seat('andy');
+    this.ringT = 0;
+    this.baseTask('phone', {
+      title: mobile ? 'Mobile ringing' : 'Desk phone ringing',
+      detail: `${caller.name} is calling${mobile ? '' : ' your desk'}`,
+      icon: mobile ? 'mobile' : 'phone',
+      portrait: caller.id,
+      verb: mobile ? 'Answer mobile' : 'Answer the phone',
+      variant: mobile ? 'mobile' : 'desk',
+      caller,
+      radius: mobile ? 1e6 : 16,
+      target: () => (mobile ? { x: this.andy.x, y: this.andy.y } : seat),
+    });
+  }
+
+  private updatePhoneModal(input: Input) {
+    let brushOff: boolean | null = null;
+    if (input.took('allow') || input.took('left')) brushOff = true;
+    if (input.took('deny') || input.took('right')) brushOff = false;
+    const b = modalButtons();
+    for (const c of input.clicks) {
+      if (inRect(c, b.allow)) brushOff = true;
+      if (inRect(c, b.deny)) brushOff = false;
+    }
+    if (brushOff === null) return;
+    this.answerCall(brushOff);
+  }
+
+  /** Brush the caller off (calming, but the boss hears about it) or log a ticket (safe, a bit annoying). */
+  answerCall(brushOff: boolean) {
+    const m = this.modal as Extract<Modal, { kind: 'phone' }>;
+    this.modal = null;
+    const d = this.defs.phone;
+    if (brushOff) {
+      const bossBusy = this.tasks.some((t) => t.type === 'boss');
+      this.completeTask(m.task, this.brushOffs.next());
+      if (bossBusy) addAnger(this.meters, d.ticketAnger ?? 3);
+      else addAnger(this.meters, -(d.brushOffCalm ?? 8));
+      m.caller.say('Charming!', 2);
+      this.brushOffsToday++;
+      if (this.brushOffsToday >= (d.brushOffsBeforeBoss ?? 3) && !bossBusy) {
+        this.brushOffsToday = 0;
+        this.spawnBoss();
+        this.banner = { text: 'Too many complaints! The boss wants a word.', t: 3 };
+      }
+    } else {
+      this.completeTask(m.task, this.ticketLines.next());
+      addAnger(this.meters, d.ticketAnger ?? 3);
+      m.caller.say('Thanks Andy!', 2);
+    }
+  }
+
   /** Three darts each, revealed in turn. The winner is decided first, then the scores are made to fit. */
   private makeDarts(): { throws: DartThrow[]; win: boolean } {
     const win = this.rng() < (this.defs.darts.winChance ?? 0.5);
@@ -764,6 +847,11 @@ export class Game {
       this.sfx('click');
       return;
     }
+    if (t.type === 'phone') {
+      this.modal = { kind: 'phone', task: t, caller: t.caller!, request: this.requests.next() };
+      this.sfx('click');
+      return;
+    }
     if (t.type === 'darts') {
       const spot = this.map.point('dartsAndy');
       this.andy.x = spot.x;
@@ -797,7 +885,7 @@ export class Game {
     if (input.took('allow') || input.took('left')) choice = true;
     if (input.took('deny') || input.took('right')) choice = false;
     for (const c of input.clicks) {
-      const b = carModalButtons();
+      const b = modalButtons();
       if (inRect(c, b.allow)) choice = true;
       if (inRect(c, b.deny)) choice = false;
     }
@@ -845,7 +933,7 @@ export class Game {
     const msgs: Record<EventType, string> = {
       car: 'Unchecked car!', toilet: 'They made a mess!', rant: 'Missed the rant', fun: 'They got away with it',
       video: 'Missed the call!', boss: 'Boss is NOT happy', shower: 'Lee used all the hot water',
-      invoice: 'Invoices not signed', darts: 'Dave is sulking', amber: 'Missed Amber',
+      invoice: 'Invoices not signed', darts: 'Dave is sulking', amber: 'Missed Amber', phone: 'Missed call',
     };
     this.toast(`${msgs[t.type]} +${d.angerOnFail} anger`, this.andy, '#f88');
     if (!this.andy.hidden) this.andy.say(this.grumbles.next(), 2, 'andy');
@@ -916,8 +1004,8 @@ export const dist = (a: Vec, b: Vec) => Math.hypot(a.x - b.x, a.y - b.y);
 const first = (name: string) => name.split(' ').slice(-1)[0];
 export const inRect = (p: Vec, r: { x: number; y: number; w: number; h: number }) => p.x >= r.x && p.y >= r.y && p.x <= r.x + r.w && p.y <= r.y + r.h;
 
-/** Car-check modal button rectangles in logical screen coords (shared by renderer and input). */
-export function carModalButtons() {
+/** Car-check and phone-call button rectangles in logical screen coords (shared by renderer and input). */
+export function modalButtons() {
   return {
     allow: { x: 200, y: 318, w: 150, h: 34 },
     deny: { x: 370, y: 318, w: 150, h: 34 },

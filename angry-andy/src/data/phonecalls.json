@@ -1,0 +1,38 @@
+{
+  "_comment": "Phone calls. 'requests' are what callers ask for (add as many as you like). 'brushOffs' are what Andy says when he brushes someone off; 'ticketLines' when he logs a ticket.",
+  "requests": [
+    "Can you connect my gym equipment to the internet?",
+    "I need a full Office license.",
+    "I poured coffee in my laptop.",
+    "How do I make my CCTV work?",
+    "I need AI to do my job for me.",
+    "My eyes hurt from the new wallpaper.",
+    "My mouse is on the wrong side of the desk.",
+    "Can you print the internet for me?",
+    "The cloud is full. Can you empty it?",
+    "My password expired. Can I have the old one back?",
+    "Can you make Teams less... Teams?",
+    "My screen has gone dark. Oh wait, it's lunchtime.",
+    "The printer is printing in the wrong colour.",
+    "Can you fix my phone? It's my personal one.",
+    "I clicked the link. The one that said DON'T CLICK.",
+    "My keyboard has stopped typing the letter E.",
+    "Can I have admin rights? Just for today.",
+    "The Wi-Fi is slow in the car park.",
+    "I deleted the shared drive. Is that bad?",
+    "Can you put my holiday photos on the big screen?"
+  ],
+  "brushOffs": [
+    "A problem, but not my problem.",
+    "Have you tried turning it off and leaving?",
+    "Not my circus, not my clowns.",
+    "That's a you problem.",
+    "Put it in writing. In crayon."
+  ],
+  "ticketLines": [
+    "I'll log a ticket.",
+    "Raise it on the portal.",
+    "Ticket logged. Priority: low. Very low.",
+    "Fine. I'll take a look. Eventually."
+  ]
+}

@@ -71,6 +71,17 @@ const PORT = 5199;
     const dartsOk = await page.evaluate(() => window.__andy.game.modal?.kind === 'darts');
     if (!dartsOk) errors.push('darts game did not start');
     await page.waitForTimeout(3500);
+    // answer a mobile call
+    await page.evaluate(() => { const g = window.__andy.game; g.tasks = g.tasks.filter((t) => t.type !== 'phone'); g.defs.phone.mobileChance = 1; g.spawn('phone'); g.defs.phone.mobileChance = 0.5; const p = g.map.point('frontDoor'); g.andy.x = p.x; g.andy.y = p.y; });
+    await page.waitForTimeout(400);
+    await page.keyboard.down('e');
+    await page.waitForTimeout(700);
+    await page.keyboard.up('e');
+    await page.screenshot({ path: path.join(OUT, '5b-phone.png') });
+    if (!(await page.evaluate(() => window.__andy.game.modal?.kind === 'phone'))) errors.push('phone call did not open');
+    await page.keyboard.press('a');
+    await page.waitForTimeout(300);
+    if (await page.evaluate(() => window.__andy.game.modal)) errors.push('phone call did not close');
     await page.evaluate(() => { const g = window.__andy.game; g.spawn('boss'); const p = g.map.point('stairs'); g.andy.x = p.x; g.andy.y = p.y; });
     await page.keyboard.down('e');
     await page.waitForTimeout(800);

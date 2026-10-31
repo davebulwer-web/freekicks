@@ -619,6 +619,13 @@ function dart() {
   d.set(1, 0, '#ddd'); d.vline(1, 1, 4, '#c8a030'); d.rect(0, 5, 3, 2, '#2060d0');
   return d;
 }
+function deskphone() {
+  const p = new Img(10, 8);
+  p.rect(1, 3, 8, 5, '#d8cfb0'); p.rect(2, 4, 6, 3, '#c4ba98');
+  p.rect(0, 0, 10, 3, '#3a3a3a'); p.rect(0, 0, 2, 4, '#3a3a3a'); p.rect(8, 0, 2, 4, '#3a3a3a');
+  for (const [x, y] of [[3, 5], [5, 5], [7, 5]]) p.set(x, y, '#666');
+  return p;
+}
 function stairsArrow() {
   const s = new Img(16, 16);
   s.rect(6, 6, 4, 8, '#f8f0c0'); for (let i = 0; i < 5; i++) s.hline(8 - i, 7 + i, 2 + i, '#f8f0c0');
@@ -645,7 +652,7 @@ function car(col) {
 
 // ---------------------------------------------------------------- UI icons (16x16)
 
-const ICONS = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'tea', 'bladder', 'check', 'cross', 'clock', 'warning', 'sound_on', 'sound_off', 'star', 'invoice', 'darts', 'window'];
+const ICONS = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'tea', 'bladder', 'check', 'cross', 'clock', 'warning', 'sound_on', 'sound_off', 'star', 'invoice', 'darts', 'window', 'phone', 'mobile'];
 function icon(name) {
   const i = new Img(16, 16);
   switch (name) {
@@ -667,6 +674,8 @@ function icon(name) {
     case 'invoice': i.rect(3, 1, 10, 14, '#f8f8f8'); i.hline(5, 10, 4, '#999'); i.hline(5, 10, 6, '#999'); i.hline(5, 8, 8, '#999'); for (let k = 0; k < 7; k++) i.set(4 + k, 12 - (k % 3 === 1 ? 1 : 0), '#2040c0'); i.set(11, 10, '#2040c0'); break;
     case 'darts': i.ellipse(7, 9, 6, 6, '#1a1a1a'); i.ellipse(7, 9, 4.5, 4.5, '#e8dcb8'); i.ellipse(7, 9, 2.5, 2.5, '#c02020'); i.set(7, 9, '#208a40'); for (let k = 0; k < 5; k++) i.set(8 + k, 8 - k, '#c8a030'); i.rect(13, 1, 2, 2, '#2060d0'); break;
     case 'window': i.rect(1, 2, 14, 12, '#7aa8d8'); i.frame(1, 2, 14, 12, '#e8e8e8'); i.vline(8, 2, 13, '#e8e8e8'); i.hline(1, 14, 8, '#e8e8e8'); i.rect(4, 4, 2, 2, '#f0d070'); i.rect(4, 6, 2, 2, '#f2a0b8'); break;
+    case 'phone': i.rect(2, 3, 12, 3, '#222'); i.rect(2, 3, 3, 5, '#222'); i.rect(11, 3, 3, 5, '#222'); i.rect(4, 9, 8, 5, '#d8cfb0'); i.rect(6, 10, 4, 3, '#999'); i.set(1, 1, '#f44'); i.set(14, 1, '#f44'); break;
+    case 'mobile': i.rect(4, 1, 8, 14, '#222'); i.rect(5, 2, 6, 10, '#6ac8f0'); i.rect(7, 13, 2, 1, '#888'); i.set(2, 5, '#f44'); i.set(1, 7, '#f44'); i.set(13, 5, '#f44'); i.set(14, 7, '#f44'); break;
     case 'star': for (let k = 0; k < 6; k++) i.hline(8 - k, 7 + k, 7, '#f0d040'); i.rect(6, 2, 4, 12, '#f0d040'); i.rect(2, 6, 12, 3, '#f0d040'); break;
   }
   i.outline(OUTLINE);
@@ -750,6 +759,7 @@ const objs = packRow([
   { name: 'printer', img: printer(), oy: -6 }, { name: 'cooler', img: cooler(), oy: -10 },
   { name: 'plant', img: plant(), oy: -8 }, { name: 'filing', img: filing(), oy: -8 },
   { name: 'beanbag', img: beanbag() }, { name: 'bin', img: bin() }, { name: 'whiteboard', img: whiteboard(), oy: -8 },
+  { name: 'deskphone', img: deskphone() },
   { name: 'dartboard', img: dartboard(), oy: 2 }, { name: 'dart', img: dart() },
   { name: 'mess', img: mess(), oy: 4 }, { name: 'out_of_order', img: sign() }, { name: 'stairs_up', img: stairsArrow() },
 ]);
