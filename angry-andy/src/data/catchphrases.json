@@ -9,7 +9,7 @@
     "Not on my watch.",
     "I've got a ticket for that. It's called NO.",
     "Do I look like a help desk?",
-    "Thirty years I've been doing this.",
+    "Thirty five years I've been doing this.",
     "Popular as a pork chop in a synagogue.",
     "Not my circus, not my clowns.",
     "Bhups has two cars",
@@ -22,21 +22,33 @@
     "Princess still can't drive",
     "The current Mrs Smith",
     "Rammed to the gunwales",
-    "As useful as an ashtray on a motorbike"    
+    "As useful as an ashtray on a motorbike",
+    "Did I tell you about the bloke from MI5?",
+    "I saw half a bloke in a lift shaft",
+    "Biltong Boy",
+    "Model Leisure Centre",
+    "Katie Chalk, do do do do do do",
+    "Bouncer at Mothercare",
+    "Car for Sale, call Bhups!"
     
   ],
   "grumbles": ["Grrr...", "Oh, marvellous.", "Typical.", "Brilliant. Just brilliant.", "Why me?", "Doesn't get the gig"],
-  "excuses": ["Sorry Andy!", "It wasn't me!", "Alright, alright!", "I was just leaving!", "Keep your hair on!"],
+  "excuses": ["Sorry Andy!", "It wasn't me!", "Alright, alright!", "I was just leaving!", "Keep your hair on!", "Shut it, baldy"],
   "boss": [
     "Can you make the internet faster?",
     "Why does the printer hate me?",
     "I need IT to be more... synergistic.",
     "My nephew says we should use the cloud.",
     "Budget's frozen. Do more with less.",
-    "Can you fix my phone? It's personal."
+    "Can you fix my phone? It's personal.",
+    "Ivan wants more AI everywhere",
+    "Connect all customers to corporate WiFi"
   ],
   "amber": [
     "Ahh, lovely weather today.",
+    "Nice boot",
+    "Tight jeans",
+    "If I were 30 years younger",
     "Just checking the window seals.",
     "Nice view from here.",
     "This corner gets the best Wi-Fi, you know.",
@@ -45,6 +57,7 @@
   "aiImages": [
     "Andy as a Roman emperor, conquering the printer.",
     "The whole IT team as the Spice Girls.",
+    "PJ as a princess with a ginger prince",
     "A cat in a hi-vis jacket fixing the server.",
     "Andy's head on a bodybuilder. Oiled.",
     "The boss as a Teletubby.",
@@ -62,7 +75,8 @@
       "Fresh air. Lovely. Nobody rang.",
       "Found a fiver on the pavement!",
       "Emma brought biscuits. Good biscuits.",
-      "The sun came out. For once."
+      "The sun came out. For once.",
+      "We made a plan to stage a coup"
     ],
     "bad": [
       "Emma talked about her ex for twenty minutes.",
