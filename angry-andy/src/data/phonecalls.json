@@ -20,7 +20,10 @@
     "Can I have admin rights? Just for today.",
     "The Wi-Fi is slow in the car park.",
     "I deleted the shared drive. Is that bad?",
-    "Can you put my holiday photos on the big screen?"
+    "Can you put my holiday photos on the big screen?",
+    "Can you connect my razor to the network?",
+    "Can you make pron come on my screen?",
+    "Why have you blocked sadgimps.com?"
   ],
   "brushOffs": [
     "A problem, but not my problem.",
@@ -37,7 +40,7 @@
   ],
   "coldCallers": [
     "Gary from SolarNow",
-    "Kevin, Windows & Doors Direct",
+    "Ivan from Astaris",
     "Chantelle, Accident Claims UK",
     "Brad from CloudSync Pro",
     "Darren, Printer Savings Ltd",
@@ -54,13 +57,16 @@
     "We noticed your website could rank higher on Google.",
     "Can I interest you in 500 rubber ducks with your logo on?",
     "Our AI firewall uses blockchain. And quantum.",
-    "Are you happy with your current broadband supplier?"
+    "Are you happy with your current broadband supplier?",
+    "Would you like to by some Wegovy"
   ],
   "hangUpLines": [
     "Not interested. *click*",
     "Take me off your list.",
     "No. No. And no.",
-    "*hangs up mid-sentence*"
+    "*hangs up mid-sentence*",
+    "This is a business number.",
+    "I'm calling your CEO"
   ],
   "hearOutLines": [
     "Twenty minutes of my life. Gone.",
