@@ -155,6 +155,7 @@ export class Renderer {
       if (f) ctx.drawImage(objImg, f.x, f.y, f.w, f.h, Math.round(px + f.ox), Math.round(py + f.oy), f.w, f.h);
     };
     if (g.toiletOutOfOrder > 0) obj('mess', 28 * ts, 11 * ts);
+    const jam = g.printerJammed ? g.map.data.objects.find((o) => o.type === 'printer' && g.map.roomAt({ x: (o.x + 0.5) * ts, y: (o.y + 0.5) * ts })?.id === 'finance') : undefined;
 
     // y-sorted drawables
     const items: { y: number; draw: () => void }[] = [];
@@ -193,6 +194,22 @@ export class Renderer {
     for (const it of items) it.draw();
 
     if (g.modal?.kind === 'darts') this.drawDarts(g, obj);
+    if (jam) {
+      const px = jam.x * ts + 8, py = jam.y * ts - 6;
+      ctx.fillStyle = 'rgba(200,200,200,0.75)';
+      for (let i = 0; i < 4; i++) {
+        const ph = (this.t * 0.8 + i / 4) % 1;
+        const r = 2 + ph * 3;
+        ctx.beginPath();
+        ctx.arc(px - 3 + Math.sin(ph * 6 + i) * 4, py - ph * 16, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (Math.floor(this.t * 3) % 2 === 0) {
+        ctx.font = `9px ${TITLE_FONT}`;
+        ctx.textAlign = 'center';
+        this.outlinedText('JAM', px, py - 26, C.bad);
+      }
+    }
     if (!g.andy.hidden && g.tasks.some((t) => t.type === 'phone' && t.variant === 'mobile')) {
       const buzz = Math.round(Math.sin(this.t * 50));
       this.icon('mobile', g.andy.x + 6 + buzz, g.andy.y - 34);
@@ -835,9 +852,9 @@ export class Renderer {
     const lines = [
       'Andy is the IT Manager. He is permanently annoyed.',
       'Deal with each task before its timer runs out or his ANGER rises.',
-      'Answer the phone, check cars, chase Simon out of the loo, rant at people,',
-      'stop the IT lads having fun, keep the open-calls screen down, sign',
-      "Debbie's invoices, go for walks with Emma, beat Big Toe Dave at darts.",
+      'Answer the phone, check cars, chase Simon out of the loo, throw Alistair out,',
+      'fix Finance\'s printer and PCs, stop the IT lads having fun, keep the',
+      "open-calls screen down, sign invoices, walk with Emma, play darts.",
       'Keep BLADDER (loo) and THIRST (tea in the kitchen) under control.',
       'Survive until 5 o\'clock. If anger hits 100%... MELTDOWN.',
     ];

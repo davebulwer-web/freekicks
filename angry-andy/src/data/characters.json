@@ -35,6 +35,8 @@
 
     { "id": "lee", "name": "Lycra Lee", "role": "Cyclist", "office": "outside",
       "look": { "skin": "#f0c4a0", "hair": "helmet", "hairColor": "#e83030", "shirt": "#f4e030", "trousers": "#181818", "shoes": "#181818" } },
+    { "id": "alistair", "name": "Alistair", "role": "Ex-employee (coffee thief)", "office": "outside",
+      "look": { "skin": "#f2c8a8", "hair": "short", "hairColor": "#d0602a", "beard": true, "shirt": "#4a6a3a", "hoodie": "#4a6a3a", "trousers": "#3a5a8a", "shoes": "#3a2a1a" } },
     { "id": "amber", "name": "Amber", "role": "Next-door office", "office": "nextdoor",
       "look": { "skin": "#f4d0b4", "hair": "long", "hairColor": "#f0d070", "shirt": "#f2a0b8", "trousers": "#2a2a3a", "skirt": true, "shoes": "#222" } },
     { "id": "boss", "name": "The Boss", "role": "Managing Director", "office": "upstairs",

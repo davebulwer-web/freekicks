@@ -12,6 +12,9 @@ A small top-down pixel-art browser game. You are **Andy**, a permanently annoyed
   - **Sign invoices**: Debbie from Finance walks over to the IT Office with invoices. Find her and hold to sign.
   - **Walk with Emma**: Emma from the Middle Office asks Andy out for a walk round the block. He's away for a few seconds (tasks keep ticking) and it either calms him down or winds him up. It's random.
   - **Open-calls screen**: the screen on the IT Office wall counts open calls. It goes up over time, and every time Andy logs a ticket. It goes down while the IT team sit at their desks. When it hits 8, Andy has to rant at the screen to get the team moving.
+  - **Alistair's sneaked in**: Alistair, ginger, bearded, and no longer works here, slips in through the front door and heads for the kettle to nick a coffee. Catch him on the way (or in the Kitchen) and throw him out before he's away with it.
+  - **Finance printer jammed**: the Finance printer jams, smoking and flashing JAM. Go over and hold to fix it.
+  - **Finance desk help**: one of the Finance ladies has a problem (an error on her screen, "Excel ate my spreadsheet."). Go to her desk and fix it.
   - **Dave's AI picture**: Big Toe Dave comes over with something he's made with AI. Have a look and Andy laughs and calms down.
   - **Darts challenge**: Big Toe Dave challenges Andy at the dartboard (top right of the IT Office). Three darts each, and the result is random. A win calms Andy down a lot; a loss winds him up.
   - **Phone calls**: the desk phone on Andy's desk or his mobile rings with daft requests ("I poured coffee in my laptop."). The desk phone only works at his desk; the mobile can be answered anywhere. Then choose: **Brush off** calms Andy, but every third brush-off in a day gets him summoned by the boss. **Log a ticket** is safe but winds him up a little. An unanswered call annoys him. About a third are **cold sales calls**: **Hang up** calms Andy (the boss doesn't mind), **Hear them out** winds him up.
@@ -71,7 +74,7 @@ Everything you'd want to tweak is in `src/data/`:
 
 | File | What it holds |
 |---|---|
-| `catchphrases.json` | Andy's catchphrases, his grumbles, people's excuses, the boss's lines, Andy's lines when Amber's outside (`amber`), Dave's AI pictures (`aiImages`) and how Emma's walks go (`walk`: `good` and `bad`). Add as many as you like. |
+| `catchphrases.json` | Andy's catchphrases, his grumbles, people's excuses, the boss's lines, Andy's lines when Amber's outside (`amber`), Dave's AI pictures (`aiImages`), how Emma's walks go (`walk`: `good` and `bad`), Alistair's lines (`alistair`) and the Finance desk problems (`financeProblems`). Add as many as you like. |
 | `phonecalls.json` | The requests people ring Andy with, his brush-off and 'I'll log a ticket' lines, plus the cold callers, their sales pitches and Andy's hang-up lines. Add as many as you like. |
 | `tuning.json` | Day length, walking speeds, how fast bladder and thirst fill, how long tea and the loo take, difficulty ramp. |
 | `events.json` | Each task type: how often it appears, time limit, hold time, anger penalty, calm reward, points. |

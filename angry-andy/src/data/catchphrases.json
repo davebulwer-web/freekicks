@@ -85,5 +85,21 @@
       "Bumped into the boss. He had 'a quick question'.",
       "Emma wanted to talk about 'the cloud'."
     ]
-  }
+  },
+  "alistair": {
+    "sneaking": ["Don't mind me...", "Just popping in...", "*tiptoes*", "Nobody saw me..."],
+    "caught": ["You don't work here any more, Alistair!", "Out! And leave the mug!", "Not on my watch, Alistair.", "Badge? No badge? OUT."],
+    "excuses": ["I left my mug here!", "Just visiting!", "The coffee's better here...", "I was never here."],
+    "escaped": ["Cheers for the brew, Andy!", "Lovely coffee, ta!", "See you next week!"]
+  },
+  "financeProblems": [
+    "Excel ate my spreadsheet.",
+    "My screen's gone upside down.",
+    "Payroll says 'computer says no'.",
+    "The calculator app has gone.",
+    "My mouse only goes left.",
+    "Sage won't open and the VAT is due.",
+    "I pressed something and everything went big.",
+    "The scanner is scanning in pink."
+  ]
 }

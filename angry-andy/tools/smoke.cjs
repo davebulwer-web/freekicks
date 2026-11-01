@@ -60,7 +60,7 @@ const PORT = 5199;
       await page.keyboard.press('a');
     }
     // darts with Big Toe Dave, Amber outside and an invoice on the way
-    await page.evaluate(() => { const g = window.__andy.game; g.tasks = g.tasks.filter((t) => t.type !== 'fun'); g.npc('dave').goHome(g.map); g.spawn('darts'); g.spawn('amber'); g.spawn('invoice'); });
+    await page.evaluate(() => { const g = window.__andy.game; g.meters.anger = 20; g.meters.bladder = g.meters.thirst = 0; g.tasks = g.tasks.filter((t) => t.type !== 'fun'); g.npc('dave').goHome(g.map); g.spawn('darts'); g.spawn('amber'); g.spawn('invoice'); });
     await page.waitForTimeout(7000);
     await page.evaluate(() => { const g = window.__andy.game; const d = g.npc('dave'); g.andy.x = d.x; g.andy.y = d.y + 8; });
     await page.keyboard.down('e');
@@ -72,14 +72,14 @@ const PORT = 5199;
     if (!dartsOk) errors.push('darts game did not start');
     await page.waitForTimeout(3500);
     // a cold call, the open-calls screen, Dave's AI picture and Emma's walk
-    await page.evaluate(() => { const g = window.__andy.game; g.tasks = g.tasks.filter((t) => t.type !== 'phone'); g.defs.phone.coldCallChance = 1; g.defs.phone.mobileChance = 1; g.spawn('phone'); g.defs.phone.coldCallChance = 0.3; g.defs.phone.mobileChance = 0.5; g.openCalls = 9; });
+    await page.evaluate(() => { const g = window.__andy.game; g.meters.anger = 20; g.meters.bladder = g.meters.thirst = 0; g.tasks = g.tasks.filter((t) => t.type !== 'phone'); g.defs.phone.coldCallChance = 1; g.defs.phone.mobileChance = 1; g.spawn('phone'); g.defs.phone.coldCallChance = 0.3; g.defs.phone.mobileChance = 0.5; g.openCalls = 9; });
     await page.keyboard.down('e');
     await page.waitForTimeout(700);
     await page.keyboard.up('e');
     await page.screenshot({ path: path.join(OUT, '5c-coldcall.png') });
     if (!(await page.evaluate(() => window.__andy.game.modal?.caller?.cold))) errors.push('cold call did not open');
     await page.keyboard.press('a');
-    await page.evaluate(() => { const g = window.__andy.game; const d = g.npc('dave'); d.busy = false; d.activity = null; g.tasks = g.tasks.filter((t) => t.npc !== d && t.npc2 !== d); g.spawn('aiimage'); g.spawn('walk'); });
+    await page.evaluate(() => { const g = window.__andy.game; g.meters.anger = 20; const d = g.npc('dave'); d.busy = false; d.activity = null; g.tasks = g.tasks.filter((t) => t.npc !== d && t.npc2 !== d); g.spawn('aiimage'); g.spawn('walk'); });
     await page.waitForTimeout(9000);
     await page.evaluate(() => { const g = window.__andy.game; const d = g.npc('dave'); g.andy.x = d.x - 8; g.andy.y = d.y; });
     await page.keyboard.down('e');
@@ -98,8 +98,23 @@ const PORT = 5199;
     if (!(await page.evaluate(() => window.__andy.game.modal?.kind === 'walk'))) errors.push('walk did not start');
     await page.waitForFunction(() => !window.__andy.game.modal, null, { timeout: 8000 });
 
+    // Alistair after a coffee, and the two Finance tasks
+    await page.evaluate(() => { const g = window.__andy.game; g.meters.anger = 20; g.meters.bladder = g.meters.thirst = 0; g.tasks = []; g.spawn('alistair'); g.spawn('printer'); g.spawn('deskfix'); });
+    await page.waitForTimeout(12000);
+    await page.screenshot({ path: path.join(OUT, '5f-alistair-finance.png') });
+    await page.evaluate(() => { const g = window.__andy.game; const al = g.npc('alistair'); g.andy.x = al.x + 6; g.andy.y = al.y; });
+    await page.keyboard.down('e');
+    await page.waitForTimeout(1100);
+    await page.keyboard.up('e');
+    if (await page.evaluate(() => window.__andy.game.tasks.some((t) => t.type === 'alistair'))) errors.push('could not catch Alistair');
+    await page.evaluate(() => { const g = window.__andy.game; const p = g.map.point('printerFinance'); g.andy.x = p.x; g.andy.y = p.y; });
+    await page.keyboard.down('e');
+    await page.waitForTimeout(3300);
+    await page.keyboard.up('e');
+    if (await page.evaluate(() => window.__andy.game.printerJammed)) errors.push('printer still jammed');
+
     // answer a mobile call
-    await page.evaluate(() => { const g = window.__andy.game; g.tasks = g.tasks.filter((t) => t.type !== 'phone'); g.defs.phone.mobileChance = 1; g.spawn('phone'); g.defs.phone.mobileChance = 0.5; const p = g.map.point('frontDoor'); g.andy.x = p.x; g.andy.y = p.y; });
+    await page.evaluate(() => { const g = window.__andy.game; g.meters.anger = 20; g.meters.bladder = g.meters.thirst = 0; g.tasks = g.tasks.filter((t) => t.type !== 'phone'); g.defs.phone.mobileChance = 1; g.spawn('phone'); g.defs.phone.mobileChance = 0.5; const p = g.map.point('frontDoor'); g.andy.x = p.x; g.andy.y = p.y; });
     await page.waitForTimeout(400);
     await page.keyboard.down('e');
     await page.waitForTimeout(700);

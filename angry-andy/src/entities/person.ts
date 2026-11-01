@@ -31,7 +31,7 @@ export class Person {
   }
 }
 
-export type Activity = null | 'game' | 'football' | 'chat' | 'lounge' | 'toilet' | 'shower' | 'phone';
+export type Activity = null | 'game' | 'football' | 'chat' | 'lounge' | 'toilet' | 'shower' | 'phone' | 'coffee' | 'help';
 
 /** Office worker: sits at their desk, wanders to the printer/kitchen now and then, or follows a script. */
 export class Npc extends Person {
@@ -41,6 +41,8 @@ export class Npc extends Person {
   busy = false;
   seated = false;
   activity: Activity = null;
+  /** Seconds this person is held on the spot because Andy is dealing with them. */
+  stopped = 0;
   private idle = 0;
   private waiting = 0;
   private funT = 0;
@@ -75,6 +77,11 @@ export class Npc extends Person {
   update(dt: number, map: TileMap, rng: Rng, errands: Vec[]) {
     this.tickBubble(dt);
     if (this.hidden) return;
+    if (this.stopped > 0) {
+      this.stopped -= dt;
+      this.pose = 'stand';
+      return;
+    }
     if (this.path) {
       this.walk(dt);
       return;
@@ -93,6 +100,8 @@ export class Npc extends Person {
           toilet: ['*grunt*', '...', 'Hmm hmm hmm'],
           shower: ['La la la!', '*splash*', 'Ahhh...'],
           phone: ['*scrolls phone*', '*sips coffee*', '*scrolls phone*'],
+          coffee: ['*clink*', 'Lovely brew...', "Don't mind me..."],
+          help: ['Andyyy! Help!', 'ANDY!', 'Is IT coming?!'],
         };
         this.say(pick(rng, lines[this.activity]), 1.5, 'fun');
       }

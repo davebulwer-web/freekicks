@@ -113,6 +113,8 @@ export class Game {
   /** Big Toe Dave's AI picture, shown briefly in a card while the game keeps going. */
   aiCard: { caption: string; t: number } | null = null;
   private screenCooldown = 0;
+  /** The Finance printer is jammed (drawn with smoke and a flashing JAM). */
+  printerJammed = false;
 
   private spawner!: Spawner;
   private callTimes: number[] = [];
@@ -132,6 +134,11 @@ export class Game {
   private aiImages: PhraseRotator;
   private walkGood: PhraseRotator;
   private walkBad: PhraseRotator;
+  private alSneak: PhraseRotator;
+  private alCaught: PhraseRotator;
+  private alExcuses: PhraseRotator;
+  private alEscaped: PhraseRotator;
+  private financeProblems: PhraseRotator;
   private carIds = 0;
   private teaProgress = 0;
   private looProgress = 0;
@@ -158,6 +165,11 @@ export class Game {
     this.aiImages = new PhraseRotator(phrasesJson.aiImages, this.rng);
     this.walkGood = new PhraseRotator(phrasesJson.walk.good, this.rng);
     this.walkBad = new PhraseRotator(phrasesJson.walk.bad, this.rng);
+    this.alSneak = new PhraseRotator(phrasesJson.alistair.sneaking, this.rng);
+    this.alCaught = new PhraseRotator(phrasesJson.alistair.caught, this.rng);
+    this.alExcuses = new PhraseRotator(phrasesJson.alistair.excuses, this.rng);
+    this.alEscaped = new PhraseRotator(phrasesJson.alistair.escaped, this.rng);
+    this.financeProblems = new PhraseRotator(phrasesJson.financeProblems, this.rng);
     this.brushOffs = new PhraseRotator(callsJson.brushOffs, this.rng);
     this.ticketLines = new PhraseRotator(callsJson.ticketLines, this.rng);
     try { this.best = Number(localStorage.getItem('andy.best') || 0); } catch { /* storage blocked */ }
@@ -220,6 +232,7 @@ export class Game {
     this.aiCard = null;
     this.openCalls = this.tuning.openCallsStart;
     this.screenCooldown = 0;
+    this.printerJammed = false;
   }
 
   dateLabel(): string {
@@ -430,6 +443,8 @@ export class Game {
       }
     } else if (it.task) {
       const t = it.task;
+      // whoever Andy is dealing with stops where they are until he's done
+      for (const n of [t.npc, t.npc2]) if (n && t.target() && n.x === t.target()!.x && n.y === t.target()!.y) { n.stopped = 0.25; n.face(a.x - n.x, a.y - n.y); }
       t.progress += inc;
       it.progress = t.progress;
       if (t.type === 'video') this.deskScreens.andy = 'call';
@@ -495,6 +510,9 @@ export class Game {
       case 'invoice': return !has('invoice') && this.freeNpcs((n) => n.id === 'debbie').length > 0;
       case 'walk': return !has('walk') && !this.modal && this.freeNpcs((n) => n.id === 'emma').length > 0;
       case 'aiimage': return !has('aiimage') && this.freeNpcs((n) => n.id === 'dave').length > 0;
+      case 'alistair': return !has('alistair') && this.npcs.some((n) => n.id === 'alistair' && n.hidden);
+      case 'printer': return !has('printer') && !this.printerJammed;
+      case 'deskfix': return !has('deskfix') && this.freeNpcs((n) => n.office === 'finance').length > 0;
       case 'screen': return !has('screen') && this.screenCooldown <= 0 && Math.floor(this.openCalls) >= this.tuning.screenRantAt;
       case 'darts': return !has('darts') && !this.modal && this.freeNpcs((n) => n.id === 'dave').length > 0;
       case 'amber': return !has('amber') && this.amberLeave <= 0 && this.npcs.some((n) => n.id === 'amber' && n.hidden);
@@ -527,6 +545,9 @@ export class Game {
       case 'walk': this.spawnWalk(); break;
       case 'screen': this.spawnScreen(); break;
       case 'aiimage': this.spawnAiImage(); break;
+      case 'alistair': this.spawnAlistair(); break;
+      case 'printer': this.spawnPrinter(); break;
+      case 'deskfix': this.spawnDeskFix(); break;
       case 'video': this.spawnVideo(this.dayFrac + this.tuning.videoCallWarningSeconds / this.tuning.dayLengthSeconds); break;
     }
   }
@@ -934,6 +955,81 @@ export class Game {
     this.banner = { text: 'Open calls are piling up!', t: 2.5 };
   }
 
+  // ---- Alistair, who doesn't work here any more, after a free coffee
+
+  private spawnAlistair() {
+    const al = this.npc('alistair');
+    const start = this.map.point('outsideLeft');
+    al.hidden = false;
+    al.busy = true;
+    al.activity = null;
+    al.x = start.x;
+    al.y = start.y;
+    al.goTo(this.map, this.map.point('kettle'), () => {
+      al.dir = 'up';
+      al.activity = 'coffee';
+    });
+    al.say(this.alSneak.next(), 2.5);
+    this.baseTask('alistair', {
+      title: "Alistair's sneaked in!",
+      detail: "He doesn't even work here! Stop him",
+      icon: 'thief',
+      portrait: 'alistair',
+      verb: 'Throw Alistair out',
+      npc: al,
+      target: () => ({ x: al.x, y: al.y }),
+    });
+    this.banner = { text: 'Intruder! Alistair is after a free coffee...', t: 2.5 };
+  }
+
+  // ---- Finance: printer jam and desk problems
+
+  private spawnPrinter() {
+    this.printerJammed = true;
+    const pam = this.freeNpcs((n) => n.id === 'pam')[0];
+    const spot = this.map.point('printerFinance');
+    if (pam) {
+      pam.busy = true;
+      pam.goTo(this.map, { x: spot.x + 14, y: spot.y + 4 }, () => {
+        pam.dir = 'left';
+        pam.say('It\'s jammed AGAIN!', 2.5);
+      });
+    }
+    this.baseTask('printer', {
+      title: 'Finance printer jammed',
+      detail: pam ? 'Printer Pam strikes again' : 'Paper jam in Finance',
+      icon: 'jam',
+      portrait: pam ? 'pam' : undefined,
+      verb: 'Fix the printer',
+      npc: pam,
+      target: () => spot,
+    });
+  }
+
+  private spawnDeskFix() {
+    const n = pick(this.rng, this.freeNpcs((k) => k.office === 'finance'));
+    n.busy = true;
+    const problem = this.financeProblems.next();
+    const desk = n.deskId!;
+    const sitAndShout = () => {
+      n.sitDown();
+      n.activity = 'help';
+      this.deskScreens[desk] = 'error';
+    };
+    if (n.seated && !n.path) sitAndShout();
+    else n.goTo(this.map, this.map.seat(desk), sitAndShout);
+    this.deskScreens[desk] = 'error';
+    this.baseTask('deskfix', {
+      title: `${n.name} needs help`,
+      detail: problem,
+      icon: 'fix',
+      portrait: n.id,
+      verb: 'Fix it',
+      npc: n,
+      target: () => ({ x: n.x, y: n.y }),
+    });
+  }
+
   // ---- Big Toe Dave's AI pictures
 
   private spawnAiImage() {
@@ -1051,6 +1147,19 @@ export class Game {
       this.npcs.filter((n) => n.office === 'it' && !n.hidden).forEach((n, i) => n.say(lines[i % lines.length], 2.2));
       return;
     }
+    if (t.type === 'alistair') {
+      this.completeTask(t, this.alCaught.next());
+      return;
+    }
+    if (t.type === 'printer') {
+      this.printerJammed = false;
+      this.completeTask(t, pick(this.rng, ['Fixed. Again.', 'Who prints this much?!', 'Printers. Worse than my ex-wife.']));
+      return;
+    }
+    if (t.type === 'deskfix') {
+      this.completeTask(t, pick(this.rng, ['Have you tried turning it off and on?', 'Fixed. Don\'t touch anything.', 'There. Was that so hard?']));
+      return;
+    }
     if (t.type === 'aiimage') {
       this.aiCard = { caption: this.aiImages.next(), t: 3.5 };
       this.completeTask(t, pick(this.rng, ['HA! Brilliant.', 'Hahaha! Send me that.', 'Ha! That\'s going on the fridge.']));
@@ -1122,10 +1231,12 @@ export class Game {
       video: 'Missed the call!', boss: 'Boss is NOT happy', shower: 'Lee used all the hot water',
       invoice: 'Invoices not signed', darts: 'Dave is sulking', amber: 'Missed Amber', phone: 'Missed call',
       walk: 'Emma went back to her desk', screen: 'Calls still piling up', aiimage: 'Missed the AI masterpiece',
+      alistair: 'Alistair nicked a coffee!', printer: 'Finance still can\'t print', deskfix: 'Finance are fuming',
     };
     this.toast(d.angerOnFail ? `${msgs[t.type]} +${d.angerOnFail} anger` : msgs[t.type], this.andy, d.angerOnFail ? '#f88' : '#ccc');
     if (!this.andy.hidden && d.angerOnFail) this.andy.say(this.grumbles.next(), 2, 'andy');
     if (t.type === 'screen') this.screenCooldown = 10;
+    if (t.type === 'printer') this.printerJammed = false;
     if (t.type === 'toilet') this.toiletOutOfOrder = this.tuning.toiletOutOfOrderSeconds;
     if (t.type === 'car' && t.car) {
       t.car.checked = true;
@@ -1143,12 +1254,15 @@ export class Game {
       else if (t.type === 'darts') n.say('Suit yourself...', 2.2);
       else if (t.type === 'aiimage') n.say(scolded ? 'I made it with my big toe!' : 'Your loss.', 2.2);
       else if (t.type === 'walk') n.say('Fine, I\'ll go on my own.', 2.2);
+      else if (t.type === 'alistair') n.say(scolded ? this.alExcuses.next() : this.alEscaped.next(), 2.4);
+      else if (t.type === 'deskfix') n.say(scolded ? 'My hero!' : 'Useless! Typical IT.', 2.2);
+      else if (t.type === 'printer') n.say(scolded ? 'About time!' : 'I\'ll use Debbie\'s then...', 2.2);
       else if (scolded && t.type !== 'rant') n.say(this.excuses.next(), 2);
       if (scolded && t.type === 'rant') n.say(pick(this.rng, ['Sorry Andy...', 'Yes Andy.', 'Won\'t happen again!']), 2.4);
       if (n.deskId && this.deskScreens[n.deskId]) delete this.deskScreens[n.deskId];
       if (this.intruderInside === n) this.intruderInside = null;
       if (t.type === 'rant') continue;
-      if (n.id === 'lee') {
+      if (n.id === 'lee' || n.id === 'alistair') {
         n.busy = true;
         n.activity = null;
         n.goTo(this.map, this.map.point('outsideLeft'), () => { n.hidden = true; n.busy = false; });

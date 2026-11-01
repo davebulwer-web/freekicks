@@ -117,6 +117,8 @@ describe("Emma's walk", () => {
     play(g, input, 1.2);
     expect(g.modal?.kind).toBe('walk');
     expect(g.andy.hidden).toBe(true);
+    g.tasks = []; // ignore other random tasks timing out while he's away
+    g.meters.anger = 50;
     input.action = false;
     play(g, input, 9);
     expect(g.modal).toBeNull();
@@ -184,5 +186,91 @@ describe("Big Toe Dave's AI pictures", () => {
     expect(g.aiCard).not.toBeNull();
     expect(phrases.aiImages).toContain(g.aiCard!.caption);
     expect(g.meters.anger).toBeLessThan(45);
+  });
+});
+
+describe('Alistair the coffee thief', () => {
+  it('heads for the kettle and, if not stopped, nicks a coffee and leaves', () => {
+    const g = fresh();
+    g.spawn('alistair');
+    const al = g.npc('alistair');
+    expect(al.hidden).toBe(false);
+    const t = g.tasks.find((k) => k.type === 'alistair')!;
+    const input = fakeInput();
+    // let him walk in: he should reach the Kitchen
+    play(g, input, t.timeLimit - 2);
+    expect(g.map.roomAt(al)?.id).toBe('kitchen');
+    expect(al.activity).toBe('coffee');
+    g.tasks = g.tasks.filter((k) => k === t);
+    g.meters.anger = 50;
+    play(g, input, 3);
+    expect(g.tasks.includes(t)).toBe(false);
+    expect(g.meters.anger).toBeGreaterThan(55);
+    play(g, input, 25);
+    expect(al.hidden).toBe(true);
+  });
+
+  it('catching him throws him out', () => {
+    const g = fresh();
+    g.spawn('alistair');
+    const al = g.npc('alistair');
+    const input = fakeInput();
+    play(g, input, 3);
+    g.andy.x = al.x + 6;
+    g.andy.y = al.y;
+    input.action = true;
+    play(g, input, 1.2);
+    expect(g.tasks.some((k) => k.type === 'alistair')).toBe(false);
+    expect(g.stats.done).toBeGreaterThanOrEqual(1);
+    expect(phrases.alistair.caught).toContain(g.andy.bubble?.text);
+    input.action = false;
+    play(g, input, 30);
+    expect(al.hidden).toBe(true);
+  });
+});
+
+describe('Finance tasks', () => {
+  it('a jammed Finance printer gets fixed when Andy holds at it', () => {
+    const g = fresh();
+    g.spawn('printer');
+    expect(g.printerJammed).toBe(true);
+    const p = g.map.point('printerFinance');
+    expect(g.map.roomAt(p)?.id).toBe('finance');
+    g.andy.x = p.x;
+    g.andy.y = p.y;
+    const input = fakeInput();
+    input.action = true;
+    play(g, input, 3.5);
+    expect(g.printerJammed).toBe(false);
+    expect(g.tasks.some((k) => k.type === 'printer')).toBe(false);
+  });
+
+  it('a Finance desk problem shows an error screen and is fixed at her desk', () => {
+    const g = fresh();
+    g.spawn('deskfix');
+    const t = g.tasks.find((k) => k.type === 'deskfix')!;
+    const n = t.npc!;
+    expect(n.office).toBe('finance');
+    expect(g.deskScreens[n.deskId!]).toBe('error');
+    expect(phrases.financeProblems).toContain(t.detail);
+    const input = fakeInput();
+    play(g, input, 15);
+    expect(g.map.roomAt(n)?.id).toBe('finance');
+    g.andy.x = n.x;
+    g.andy.y = n.y + 8;
+    input.action = true;
+    play(g, input, 3);
+    expect(g.tasks.includes(t)).toBe(false);
+    expect(g.deskScreens[n.deskId!]).toBeUndefined();
+  });
+});
+
+describe("Dave's own lines", () => {
+  it('are still in the JSON files', () => {
+    expect(phrases.excuses).toContain('Shut it, baldy');
+    expect(phrases.catchphrases).toContain('Car for Sale, call Bhups!');
+    expect(phrases.amber).toContain('Nice boot');
+    expect(calls.coldCallers).toContain('Ivan from Astaris');
+    expect(calls.requests).toContain('Can you connect my razor to the network?');
   });
 });

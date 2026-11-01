@@ -1,7 +1,7 @@
 import { type Rng, range } from '../core/rng';
 
-export type EventType = 'car' | 'toilet' | 'rant' | 'fun' | 'video' | 'boss' | 'shower' | 'invoice' | 'darts' | 'amber' | 'phone' | 'walk' | 'screen' | 'aiimage';
-export const EVENT_TYPES: EventType[] = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'invoice', 'darts', 'amber', 'phone', 'walk', 'screen', 'aiimage'];
+export type EventType = 'car' | 'toilet' | 'rant' | 'fun' | 'video' | 'boss' | 'shower' | 'invoice' | 'darts' | 'amber' | 'phone' | 'walk' | 'screen' | 'aiimage' | 'alistair' | 'printer' | 'deskfix';
+export const EVENT_TYPES: EventType[] = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'invoice', 'darts', 'amber', 'phone', 'walk', 'screen', 'aiimage', 'alistair', 'printer', 'deskfix'];
 
 export interface EventDef {
   weight: number;

@@ -498,6 +498,8 @@ function screen(kind) {
     s.rect(0, 0, 12, 8, '#202830');
     const faces = ['#e8c0a0', '#a87050', '#f0d0b0', '#c89070'];
     faces.forEach((c, i) => { const x = (i % 2) * 6, y = Math.floor(i / 2) * 4; s.rect(x, y, 5, 3, '#3a4a5a'); s.rect(x + 2, y + 1, 2, 2, c); });
+  } else if (kind === 'error') {
+    s.rect(0, 0, 12, 8, '#1a4ab8'); s.hline(1, 4, 1, '#fff'); s.hline(1, 9, 3, '#c8d8ff'); s.hline(1, 7, 5, '#c8d8ff'); s.rect(9, 5, 2, 2, '#fff');
   } else if (kind === 'off') {
     s.rect(0, 0, 12, 8, '#1c2a3a'); s.set(2, 1, '#2c3a4a');
   }
@@ -665,7 +667,7 @@ function car(col) {
 
 // ---------------------------------------------------------------- UI icons (16x16)
 
-const ICONS = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'tea', 'bladder', 'check', 'cross', 'clock', 'warning', 'sound_on', 'sound_off', 'star', 'invoice', 'darts', 'window', 'phone', 'mobile', 'walk', 'screen', 'ai'];
+const ICONS = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'tea', 'bladder', 'check', 'cross', 'clock', 'warning', 'sound_on', 'sound_off', 'star', 'invoice', 'darts', 'window', 'phone', 'mobile', 'walk', 'screen', 'ai', 'jam', 'fix', 'thief'];
 function icon(name) {
   const i = new Img(16, 16);
   switch (name) {
@@ -692,6 +694,9 @@ function icon(name) {
     case 'walk': i.rect(3, 8, 9, 4, '#8a5a32'); i.rect(9, 6, 4, 6, '#8a5a32'); i.rect(2, 12, 12, 2, '#3a2a1a'); i.hline(4, 8, 9, '#c8a070'); i.set(1, 4, '#9cd'); i.set(3, 3, '#9cd'); break;
     case 'screen': i.rect(1, 2, 14, 10, '#222'); i.rect(2, 3, 12, 8, '#2a4a6a'); i.hline(3, 9, 5, '#9cf'); i.hline(3, 7, 8, '#9cf'); i.rect(7, 12, 2, 2, '#555'); i.ellipse(13, 3, 2.6, 2.6, '#e03030'); break;
     case 'ai': i.rect(2, 4, 12, 8, '#333'); i.rect(3, 5, 10, 6, '#7a5ac8'); i.rect(1, 12, 14, 2, '#888'); i.set(8, 6, '#fff'); i.set(7, 7, '#fff'); i.set(9, 7, '#fff'); i.set(8, 8, '#fff'); i.set(12, 2, '#f0d040'); i.set(13, 1, '#f0d040'); break;
+    case 'jam': i.rect(1, 5, 11, 8, '#d8d8dc'); i.rect(3, 2, 7, 4, '#f8f8f8'); i.rect(3, 10, 7, 1, '#555'); i.rect(13, 2, 2, 7, '#e03030'); i.rect(13, 11, 2, 2, '#e03030'); break;
+    case 'fix': for (let k = 0; k < 9; k++) i.rect(3 + k, 12 - k, 2, 2, '#b8b8c0'); i.rect(10, 1, 5, 5, '#b8b8c0'); i.rect(12, 2, 2, 2, [0, 0, 0, 0]); i.rect(1, 12, 4, 3, '#b8b8c0'); break;
+    case 'thief': i.rect(3, 6, 8, 8, '#f4f4f4'); i.rect(11, 8, 2, 4, '#f4f4f4'); i.rect(4, 7, 6, 2, '#6a3a1a'); i.rect(2, 2, 12, 3, '#222'); i.rect(4, 3, 2, 1, '#fff'); i.rect(10, 3, 2, 1, '#fff'); break;
     case 'star': for (let k = 0; k < 6; k++) i.hline(8 - k, 7 + k, 7, '#f0d040'); i.rect(6, 2, 4, 12, '#f0d040'); i.rect(2, 6, 12, 3, '#f0d040'); break;
   }
   i.outline(OUTLINE);
@@ -767,7 +772,7 @@ const objs = packRow([
   { name: 'desk', img: desk(), oy: -8 },
   { name: 'screen_off', img: screen('off') }, { name: 'screen_work', img: screen('work') },
   { name: 'screen_game', img: screen('game') }, { name: 'screen_football', img: screen('football') },
-  { name: 'screen_call', img: screen('call') },
+  { name: 'screen_call', img: screen('call') }, { name: 'screen_error', img: screen('error') },
   { name: 'rack', img: rack(), oy: -12 },
   { name: 'counter', img: counter(false), oy: -6 }, { name: 'kettle', img: counter(true), oy: -6 },
   { name: 'fridge', img: fridge(), oy: -12 },
