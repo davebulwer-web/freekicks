@@ -6,12 +6,15 @@ A small top-down pixel-art browser game. You are **Andy**, a permanently annoyed
 
 - Random **tasks** pop up in the panel on the right, each with a timer. Walk to the marker and **hold the action key** until the bar fills. Miss the timer and Andy's anger goes up; finish it and he calms down a little and scores points.
   - **Car arriving**: a car parks in the car park. Check the permit, then **Allow** or **Send away**. The plate must match and the date must not have passed. A wrong call costs anger.
-  - **Loo alert**: someone is heading to the toilet to make a mess. Catch them, on the way or in there. If you're too late the toilet is out of order for a while, so Andy can't use it either.
+  - **Loo alert**: someone (usually Simon from the Middle Office) is heading to the toilet to make a mess. Catch them, on the way or in there. If you're too late the toilet is out of order for a while, so Andy can't use it either.
   - **Rant at...**: one of the usual suspects (Printer Pam, Reply-All Roger, Password Pete, Cloud Clive, Budget Brenda) needs a telling-off. Ranting calms Andy the most.
   - **IT staff having fun**: Big Toe Dave, PJ or Pavan are gaming, watching football, chatting, or lounging in the server room. Stop them.
-  - **Sign invoices**: a Finance lady walks over to the IT Office with invoices. Find her and hold to sign.
+  - **Sign invoices**: Debbie from Finance walks over to the IT Office with invoices. Find her and hold to sign.
+  - **Walk with Emma**: Emma from the Middle Office asks Andy out for a walk round the block. He's away for a few seconds (tasks keep ticking) and it either calms him down or winds him up. It's random.
+  - **Open-calls screen**: the screen on the IT Office wall counts open calls. It goes up over time, and every time Andy logs a ticket. It goes down while the IT team sit at their desks. When it hits 8, Andy has to rant at the screen to get the team moving.
+  - **Dave's AI picture**: Big Toe Dave comes over with something he's made with AI. Have a look and Andy laughs and calms down.
   - **Darts challenge**: Big Toe Dave challenges Andy at the dartboard (top right of the IT Office). Three darts each, and the result is random. A win calms Andy down a lot; a loss winds him up.
-  - **Phone calls**: the desk phone on Andy's desk or his mobile rings with daft requests ("I poured coffee in my laptop."). The desk phone only works at his desk; the mobile can be answered anywhere. Then choose: **Brush off** calms Andy, but every third brush-off in a day gets him summoned by the boss. **Log a ticket** is safe but winds him up a little. An unanswered call annoys him.
+  - **Phone calls**: the desk phone on Andy's desk or his mobile rings with daft requests ("I poured coffee in my laptop."). The desk phone only works at his desk; the mobile can be answered anywhere. Then choose: **Brush off** calms Andy, but every third brush-off in a day gets him summoned by the boss. **Log a ticket** is safe but winds him up a little. An unanswered call annoys him. About a third are **cold sales calls**: **Hang up** calms Andy (the boss doesn't mind), **Hear them out** winds him up.
   - **Amber's outside**: Amber from the office next door stands on the pavement outside the IT Office. Get Andy to the bottom-left corner of the IT Office before she wanders off.
   - **Video call**: these are booked ahead and shown as "Starts in..." Be at your desk when one starts, then hold to sit through it while other tasks keep ticking.
   - **Boss wants you**: go to the stairs. Andy is upstairs for a few seconds, and the timers keep running while he's away.
@@ -68,8 +71,8 @@ Everything you'd want to tweak is in `src/data/`:
 
 | File | What it holds |
 |---|---|
-| `catchphrases.json` | Andy's catchphrases, his grumbles, people's excuses and the boss's lines. Add as many as you like. |
-| `phonecalls.json` | The requests people ring Andy with, his brush-off lines and his 'I'll log a ticket' lines. Add as many as you like. |
+| `catchphrases.json` | Andy's catchphrases, his grumbles, people's excuses, the boss's lines, Andy's lines when Amber's outside (`amber`), Dave's AI pictures (`aiImages`) and how Emma's walks go (`walk`: `good` and `bad`). Add as many as you like. |
+| `phonecalls.json` | The requests people ring Andy with, his brush-off and 'I'll log a ticket' lines, plus the cold callers, their sales pitches and Andy's hang-up lines. Add as many as you like. |
 | `tuning.json` | Day length, walking speeds, how fast bladder and thirst fill, how long tea and the loo take, difficulty ramp. |
 | `events.json` | Each task type: how often it appears, time limit, hold time, anger penalty, calm reward, points. |
 | `characters.json` | The cast: names, desks, who can be ranted at and why, and the looks used to draw placeholder art. |

@@ -10,18 +10,18 @@
       "look": { "skin": "#eac2a0", "hair": "long", "hairColor": "#5a3420", "glasses": true, "shirt": "#7fbf9a", "trousers": "#2e3440", "shoes": "#333" } },
     { "id": "brenda", "name": "Budget Brenda", "role": "Finance", "office": "finance", "desk": "fin3", "rantTarget": true, "rantReason": "Wants a new laptop. Hers is 'slow'.",
       "look": { "skin": "#f0c8a8", "hair": "bun", "hairColor": "#8a8a8a", "shirt": "#9b7fd1", "trousers": "#2a2a35", "skirt": true, "shoes": "#222" } },
-    { "id": "irene", "name": "Invoice Irene", "role": "Finance", "office": "finance", "desk": "fin4",
+    { "id": "debbie", "name": "Debbie", "role": "Finance (invoices)", "office": "finance", "desk": "fin4",
       "look": { "skin": "#8d5a3b", "hair": "curly", "hairColor": "#1e1410", "shirt": "#e6c35c", "trousers": "#30303c", "skirt": true, "shoes": "#222" } },
     { "id": "elaine", "name": "Expenses Elaine", "role": "Finance", "office": "finance", "desk": "fin5",
       "look": { "skin": "#f5d2b8", "hair": "ponytail", "hairColor": "#b8462e", "shirt": "#6fa8dc", "trousers": "#26262e", "shoes": "#333" } },
 
     { "id": "roger", "name": "Reply-All Roger", "role": "Sales", "office": "middle", "desk": "mid1", "rantTarget": true, "rantReason": "Replied-all to the whole company.",
       "look": { "skin": "#eec4a2", "hair": "short", "hairColor": "#3a2a1a", "shirt": "#f2f2f2", "trousers": "#3a4a6a", "tie": "#2a5aa0", "shoes": "#222" } },
-    { "id": "mandy", "name": "Mandy", "role": "Operations", "office": "middle", "desk": "mid2",
-      "look": { "skin": "#f1cbb0", "hair": "long", "hairColor": "#e0c070", "shirt": "#e08a5a", "trousers": "#2c2c34", "skirt": true, "shoes": "#222" } },
+    { "id": "emma", "name": "Emma", "role": "Operations", "office": "middle", "desk": "mid2",
+      "look": { "skin": "#f1cbb0", "hair": "long", "hairColor": "#8a4a2a", "shirt": "#e08a5a", "trousers": "#2c2c34", "skirt": true, "shoes": "#222" } },
     { "id": "pete", "name": "Password Pete", "role": "Operations", "office": "middle", "desk": "mid3", "rantTarget": true, "rantReason": "Password is 'Password123'. Again.",
       "look": { "skin": "#e9bf9c", "hair": "spiky", "hairColor": "#c08a3a", "shirt": "#5f9e6e", "trousers": "#3a3a3a", "shoes": "#2a1a10" } },
-    { "id": "gary", "name": "Gary", "role": "Sales", "office": "middle", "desk": "mid4",
+    { "id": "simon", "name": "Simon", "role": "Sales (toilet menace)", "office": "middle", "desk": "mid4",
       "look": { "skin": "#c68e64", "hair": "short", "hairColor": "#141414", "shirt": "#c85050", "trousers": "#2d3340", "shoes": "#222" } },
     { "id": "clive", "name": "Cloud Clive", "role": "Marketing", "office": "middle", "desk": "mid5", "rantTarget": true, "rantReason": "Bought software on his credit card.",
       "look": { "skin": "#f0caa8", "hair": "short", "hairColor": "#777", "glasses": true, "shirt": "#e9e2c8", "trousers": "#6a5a40", "shoes": "#3a2a1a" } },
@@ -38,6 +38,8 @@
     { "id": "amber", "name": "Amber", "role": "Next-door office", "office": "nextdoor",
       "look": { "skin": "#f4d0b4", "hair": "long", "hairColor": "#f0d070", "shirt": "#f2a0b8", "trousers": "#2a2a3a", "skirt": true, "shoes": "#222" } },
     { "id": "boss", "name": "The Boss", "role": "Managing Director", "office": "upstairs",
-      "look": { "skin": "#efc6a4", "hair": "short", "hairColor": "#d8d8d8", "glasses": false, "shirt": "#2a2a3a", "trousers": "#1a1a22", "tie": "#c8a030", "shoes": "#111" } }
+      "look": { "skin": "#e8bc98", "hair": "bald", "hairColor": "#c8c8c8", "glasses": false, "shirt": "#2a2a3a", "trousers": "#1a1a22", "tie": "#c8a030", "shoes": "#111" } },
+    { "id": "coldcaller", "name": "Cold caller", "role": "Sales call", "office": "phone",
+      "look": { "skin": "#f0c8a4", "hair": "spiky", "hairColor": "#2a2a2a", "headset": true, "shirt": "#e8e8f0", "trousers": "#222", "tie": "#c03030", "shoes": "#111" } }
   ]
 }

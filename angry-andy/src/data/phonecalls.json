@@ -34,5 +34,37 @@
     "Raise it on the portal.",
     "Ticket logged. Priority: low. Very low.",
     "Fine. I'll take a look. Eventually."
+  ],
+  "coldCallers": [
+    "Gary from SolarNow",
+    "Kevin, Windows & Doors Direct",
+    "Chantelle, Accident Claims UK",
+    "Brad from CloudSync Pro",
+    "Darren, Printer Savings Ltd",
+    "Tiffany, Energy Switch Hub",
+    "Rory from CyberShield 3000"
+  ],
+  "coldCalls": [
+    "Have you been in an accident that wasn't your fault?",
+    "We can cut your printer costs by 80%!",
+    "Is that the person who handles your IT?",
+    "Have you considered moving to the cloud? Our cloud?",
+    "I'm not selling anything, I just have a few questions...",
+    "Your business may be eligible for free solar panels!",
+    "We noticed your website could rank higher on Google.",
+    "Can I interest you in 500 rubber ducks with your logo on?",
+    "Our AI firewall uses blockchain. And quantum.",
+    "Are you happy with your current broadband supplier?"
+  ],
+  "hangUpLines": [
+    "Not interested. *click*",
+    "Take me off your list.",
+    "No. No. And no.",
+    "*hangs up mid-sentence*"
+  ],
+  "hearOutLines": [
+    "Twenty minutes of my life. Gone.",
+    "Fine... send me a brochure.",
+    "I've agreed to a 'follow-up call'. Brilliant."
   ]
 }

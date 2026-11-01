@@ -12,6 +12,7 @@ const play = (g: Game, input: Input, secs: number) => { for (let i = 0; i < secs
 function ringing(variant: 'desk' | 'mobile', seed = 21) {
   const g = new Game(null, seed);
   g.defs.phone.mobileChance = variant === 'mobile' ? 1 : 0;
+  g.defs.phone.coldCallChance = 0;
   g.newGame();
   g.spawn('phone');
   g.defs.phone.mobileChance = 0.5;

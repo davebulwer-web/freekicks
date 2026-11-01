@@ -49,8 +49,11 @@ export interface Task {
   car?: Car;
   variant?: string;
   /** Who is on the other end of a phone call. */
-  caller?: Npc;
+  caller?: Caller;
 }
+
+/** Someone on the phone: an office worker, or a cold caller from outside. */
+export interface Caller { name: string; portrait: string; cold: boolean; npc?: Npc }
 
 export interface Interactable {
   key: string;
@@ -65,7 +68,8 @@ export interface Interactable {
 export type Modal =
   | { kind: 'car'; task: Task; car: Car }
   | { kind: 'boss'; t: number; total: number; line: string; task: Task }
-  | { kind: 'phone'; task: Task; caller: Npc; request: string }
+  | { kind: 'phone'; task: Task; caller: Caller; request: string }
+  | { kind: 'walk'; t: number; total: number; good: boolean; line: string; task: Task }
   | { kind: 'darts'; t: number; total: number; task: Task; throws: DartThrow[]; win: boolean };
 
 export interface DartThrow { who: 'andy' | 'dave'; score: number; dx: number; dy: number }
@@ -104,6 +108,11 @@ export class Game {
   slowed = false;
   result: { title: string; lines: string[] } | null = null;
   lastPhrase = '';
+  /** Calls waiting on the IT Office wall screen. */
+  openCalls = 0;
+  /** Big Toe Dave's AI picture, shown briefly in a card while the game keeps going. */
+  aiCard: { caption: string; t: number } | null = null;
+  private screenCooldown = 0;
 
   private spawner!: Spawner;
   private callTimes: number[] = [];
@@ -115,6 +124,14 @@ export class Game {
   private requests: PhraseRotator;
   private brushOffs: PhraseRotator;
   private ticketLines: PhraseRotator;
+  private coldCalls: PhraseRotator;
+  private coldCallers: PhraseRotator;
+  private hangUps: PhraseRotator;
+  private hearOuts: PhraseRotator;
+  private amberLines: PhraseRotator;
+  private aiImages: PhraseRotator;
+  private walkGood: PhraseRotator;
+  private walkBad: PhraseRotator;
   private carIds = 0;
   private teaProgress = 0;
   private looProgress = 0;
@@ -133,6 +150,14 @@ export class Game {
     this.excuses = new PhraseRotator(phrasesJson.excuses, this.rng);
     this.bossLines = new PhraseRotator(phrasesJson.boss, this.rng);
     this.requests = new PhraseRotator(callsJson.requests, this.rng);
+    this.coldCalls = new PhraseRotator(callsJson.coldCalls, this.rng);
+    this.coldCallers = new PhraseRotator(callsJson.coldCallers, this.rng);
+    this.hangUps = new PhraseRotator(callsJson.hangUpLines, this.rng);
+    this.hearOuts = new PhraseRotator(callsJson.hearOutLines, this.rng);
+    this.amberLines = new PhraseRotator(phrasesJson.amber, this.rng);
+    this.aiImages = new PhraseRotator(phrasesJson.aiImages, this.rng);
+    this.walkGood = new PhraseRotator(phrasesJson.walk.good, this.rng);
+    this.walkBad = new PhraseRotator(phrasesJson.walk.bad, this.rng);
     this.brushOffs = new PhraseRotator(callsJson.brushOffs, this.rng);
     this.ticketLines = new PhraseRotator(callsJson.ticketLines, this.rng);
     try { this.best = Number(localStorage.getItem('andy.best') || 0); } catch { /* storage blocked */ }
@@ -175,7 +200,7 @@ export class Game {
     this.andy.dir = 'up';
     this.npcs = [];
     for (const c of this.characters) {
-      if (c.id === 'andy' || c.office === 'upstairs') continue;
+      if (c.id === 'andy' || c.office === 'upstairs' || c.office === 'phone') continue;
       const p = c.desk ? this.map.seat(c.desk) : this.map.point('outsideLeft');
       const n = new Npc(c.id, c.name, p.x, p.y, c.desk ?? null, c.office, this.tuning.npcSpeed * range(this.rng, 0.85, 1.1));
       if (c.desk) n.sitDown();
@@ -192,6 +217,9 @@ export class Game {
     this.near = null;
     this.result = null;
     this.amberLeave = 0;
+    this.aiCard = null;
+    this.openCalls = this.tuning.openCallsStart;
+    this.screenCooldown = 0;
   }
 
   dateLabel(): string {
@@ -282,6 +310,12 @@ export class Game {
     this.updateSpawning(dt);
 
     if (this.amberLeave > 0 && (this.amberLeave -= dt) <= 0) this.sendAmberAway();
+    if (this.aiCard && (this.aiCard.t -= dt) <= 0) this.aiCard = null;
+    this.updateOpenCalls(dt);
+    if (this.modal?.kind === 'walk') {
+      this.modal.t -= dt;
+      if (this.modal.t <= 0) this.finishWalk();
+    }
     if (this.modal?.kind === 'darts') {
       this.modal.t -= dt;
       if (this.modal.t <= 0) this.resolveDarts();
@@ -458,7 +492,10 @@ export class Game {
       case 'fun': return !has('fun') && this.freeNpcs((n) => n.office === 'it').length > 0;
       case 'boss': return !has('boss') && !this.modal;
       case 'shower': return !has('shower') && this.npcs.some((n) => n.id === 'lee' && n.hidden);
-      case 'invoice': return !has('invoice') && this.freeNpcs((n) => n.office === 'finance').length > 0;
+      case 'invoice': return !has('invoice') && this.freeNpcs((n) => n.id === 'debbie').length > 0;
+      case 'walk': return !has('walk') && !this.modal && this.freeNpcs((n) => n.id === 'emma').length > 0;
+      case 'aiimage': return !has('aiimage') && this.freeNpcs((n) => n.id === 'dave').length > 0;
+      case 'screen': return !has('screen') && this.screenCooldown <= 0 && Math.floor(this.openCalls) >= this.tuning.screenRantAt;
       case 'darts': return !has('darts') && !this.modal && this.freeNpcs((n) => n.id === 'dave').length > 0;
       case 'amber': return !has('amber') && this.amberLeave <= 0 && this.npcs.some((n) => n.id === 'amber' && n.hidden);
       case 'phone': return !has('phone') && !this.modal && this.callers().length > 0;
@@ -487,6 +524,9 @@ export class Game {
       case 'darts': this.spawnDarts(); break;
       case 'amber': this.spawnAmber(); break;
       case 'phone': this.spawnPhone(); break;
+      case 'walk': this.spawnWalk(); break;
+      case 'screen': this.spawnScreen(); break;
+      case 'aiimage': this.spawnAiImage(); break;
       case 'video': this.spawnVideo(this.dayFrac + this.tuning.videoCallWarningSeconds / this.tuning.dayLengthSeconds); break;
     }
   }
@@ -529,7 +569,9 @@ export class Game {
   }
 
   private spawnToilet() {
-    const n = pick(this.rng, this.freeNpcs((k) => k.office !== 'it'));
+    // Simon is the usual suspect; anyone else (not IT) when he's busy or by chance
+    const simon = this.freeNpcs((k) => k.id === 'simon')[0];
+    const n = simon && this.rng() < (this.defs.toilet.simonChance ?? 0.7) ? simon : pick(this.rng, this.freeNpcs((k) => k.office !== 'it'));
     n.busy = true;
     n.goTo(this.map, this.map.point('toilet'), () => {
       this.intruderInside = n;
@@ -660,7 +702,7 @@ export class Game {
   }
 
   private spawnInvoice() {
-    const n = pick(this.rng, this.freeNpcs((k) => k.office === 'finance'));
+    const n = this.npc('debbie');
     n.busy = true;
     n.goTo(this.map, this.map.point('itInvoice'), () => {
       n.dir = 'right';
@@ -731,15 +773,22 @@ export class Game {
   }
 
   private spawnPhone() {
-    const caller = pick(this.rng, this.callers());
-    const mobile = this.rng() < (this.defs.phone.mobileChance ?? 0.5);
+    const d = this.defs.phone;
+    const cold = this.rng() < (d.coldCallChance ?? 0.3);
+    let caller: Caller;
+    if (cold) caller = { name: this.coldCallers.next(), portrait: 'coldcaller', cold: true };
+    else {
+      const n = pick(this.rng, this.callers());
+      caller = { name: n.name, portrait: n.id, cold: false, npc: n };
+    }
+    const mobile = this.rng() < (d.mobileChance ?? 0.5);
     const seat = this.map.seat('andy');
     this.ringT = 0;
     this.baseTask('phone', {
       title: mobile ? 'Mobile ringing' : 'Desk phone ringing',
-      detail: `${caller.name} is calling${mobile ? '' : ' your desk'}`,
+      detail: cold ? 'Unknown number...' : `${caller.name} is calling${mobile ? '' : ' your desk'}`,
       icon: mobile ? 'mobile' : 'phone',
-      portrait: caller.id,
+      portrait: caller.portrait,
       verb: mobile ? 'Answer mobile' : 'Answer the phone',
       variant: mobile ? 'mobile' : 'desk',
       caller,
@@ -761,17 +810,31 @@ export class Game {
     this.answerCall(brushOff);
   }
 
-  /** Brush the caller off (calming, but the boss hears about it) or log a ticket (safe, a bit annoying). */
+  /**
+   * The left choice (`brushOff`): brush an office caller off (calming, but the boss hears about it)
+   * or hang up on a cold caller (calming, nobody minds). The right choice: log a ticket (safe, a bit
+   * annoying, and it adds to the open-calls screen) or hear a cold caller out (annoying).
+   */
   answerCall(brushOff: boolean) {
     const m = this.modal as Extract<Modal, { kind: 'phone' }>;
     this.modal = null;
     const d = this.defs.phone;
+    if (m.caller.cold) {
+      if (brushOff) {
+        this.completeTask(m.task, this.hangUps.next());
+        addAnger(this.meters, -(d.hangUpCalm ?? 6));
+      } else {
+        this.completeTask(m.task, this.hearOuts.next());
+        addAnger(this.meters, d.hearOutAnger ?? 6);
+      }
+      return;
+    }
     if (brushOff) {
       const bossBusy = this.tasks.some((t) => t.type === 'boss');
       this.completeTask(m.task, this.brushOffs.next());
       if (bossBusy) addAnger(this.meters, d.ticketAnger ?? 3);
       else addAnger(this.meters, -(d.brushOffCalm ?? 8));
-      m.caller.say('Charming!', 2);
+      m.caller.npc?.say('Charming!', 2);
       this.brushOffsToday++;
       if (this.brushOffsToday >= (d.brushOffsBeforeBoss ?? 3) && !bossBusy) {
         this.brushOffsToday = 0;
@@ -781,8 +844,114 @@ export class Game {
     } else {
       this.completeTask(m.task, this.ticketLines.next());
       addAnger(this.meters, d.ticketAnger ?? 3);
-      m.caller.say('Thanks Andy!', 2);
+      this.openCalls += 1;
+      m.caller.npc?.say('Thanks Andy!', 2);
     }
+  }
+
+  // ---- Emma's walk
+
+  private spawnWalk() {
+    const emma = this.npc('emma');
+    emma.busy = true;
+    emma.goTo(this.map, this.map.point('itEmma'), () => {
+      emma.dir = 'right';
+      emma.say('Fancy a walk round the block?', 3);
+    });
+    this.baseTask('walk', {
+      title: 'Walk with Emma?',
+      detail: 'Could calm you down... or not',
+      icon: 'walk',
+      portrait: 'emma',
+      verb: 'Go for a walk',
+      npc: emma,
+      target: () => ({ x: emma.x, y: emma.y }),
+    });
+  }
+
+  private startWalk(t: Task) {
+    const d = this.defs.walk;
+    const good = this.rng() < (d.calmChance ?? 0.6);
+    const total = d.walkSeconds ?? 8;
+    this.tasks = this.tasks.filter((k) => k !== t);
+    this.andy.hidden = true;
+    const emma = t.npc!;
+    emma.hidden = true;
+    emma.path = null;
+    this.modal = { kind: 'walk', t: total, total, good, line: good ? this.walkGood.next() : this.walkBad.next(), task: t };
+    this.sfx('click');
+  }
+
+  private finishWalk() {
+    const m = this.modal as Extract<Modal, { kind: 'walk' }>;
+    this.modal = null;
+    const d = this.defs.walk;
+    const back = this.map.point('walkOut');
+    const emma = this.npc('emma');
+    this.andy.hidden = false;
+    this.andy.x = back.x;
+    this.andy.y = back.y;
+    this.andy.dir = 'up';
+    emma.hidden = false;
+    emma.x = back.x + 12;
+    emma.y = back.y;
+    emma.goHome(this.map);
+    this.stats.done++;
+    this.score += d.score;
+    this.stats.score += d.score;
+    if (m.good) {
+      addAnger(this.meters, -(d.calmOnGood ?? 12));
+      this.sfx('done');
+      this.toast(`Lovely walk. -${d.calmOnGood ?? 12} anger`, this.andy, '#8f8');
+      this.andy.say('That was... actually nice.', 2.4, 'andy');
+    } else {
+      addAnger(this.meters, d.angerOnBad ?? 8);
+      this.sfx('wrong');
+      this.toast(`Terrible walk. +${d.angerOnBad ?? 8} anger`, this.andy, '#f88');
+      this.andy.say(this.grumbles.next(), 2.4, 'andy');
+    }
+  }
+
+  // ---- the open-calls screen
+
+  private updateOpenCalls(dt: number) {
+    const seated = this.npcs.filter((n) => n.office === 'it' && n.seated && !n.path && !n.activity && !n.busy).length;
+    const net = this.tuning.openCallsPerMinute - seated * this.tuning.teamClosesPerMinute;
+    this.openCalls = Math.max(0, Math.min(30, this.openCalls + (net / 60) * dt));
+    if (this.screenCooldown > 0) this.screenCooldown -= dt;
+    if (this.canSpawn('screen')) this.spawnScreen();
+  }
+
+  private spawnScreen() {
+    this.baseTask('screen', {
+      title: 'Calls piling up!',
+      detail: 'Rant at the screen to get the team moving',
+      icon: 'screen',
+      verb: 'Rant at the screen',
+      radius: 18,
+      target: () => this.map.point('itScreen'),
+    });
+    this.banner = { text: 'Open calls are piling up!', t: 2.5 };
+  }
+
+  // ---- Big Toe Dave's AI pictures
+
+  private spawnAiImage() {
+    const dave = this.npc('dave');
+    dave.busy = true;
+    dave.goTo(this.map, this.map.point('itDaveShow'), () => {
+      dave.dir = 'left';
+      dave.say('Andy! Look at this!', 3);
+    });
+    this.baseTask('aiimage', {
+      title: "Dave's AI picture",
+      detail: 'Big Toe Dave has made something...',
+      icon: 'ai',
+      portrait: 'dave',
+      verb: 'Have a look',
+      npc: dave,
+      target: () => ({ x: dave.x, y: dave.y }),
+    });
   }
 
   /** Three darts each, revealed in turn. The winner is decided first, then the scores are made to fit. */
@@ -848,7 +1017,8 @@ export class Game {
       return;
     }
     if (t.type === 'phone') {
-      this.modal = { kind: 'phone', task: t, caller: t.caller!, request: this.requests.next() };
+      const caller = t.caller!;
+      this.modal = { kind: 'phone', task: t, caller, request: caller.cold ? this.coldCalls.next() : this.requests.next() };
       this.sfx('click');
       return;
     }
@@ -865,8 +1035,25 @@ export class Game {
       return;
     }
     if (t.type === 'amber') {
-      this.completeTask(t, pick(this.rng, ['Ahh, lovely weather today.', 'Just checking the window seals.', 'Nice view from here.']));
+      this.completeTask(t, this.amberLines.next());
       this.amberLeave = 4;
+      return;
+    }
+    if (t.type === 'walk') {
+      this.startWalk(t);
+      return;
+    }
+    if (t.type === 'screen') {
+      this.openCalls = Math.floor(this.openCalls / 3);
+      this.completeTask(t);
+      this.sayCatchphrase();
+      const lines = ['On it!', 'Yes boss!', 'Logging in...', 'Right away!'];
+      this.npcs.filter((n) => n.office === 'it' && !n.hidden).forEach((n, i) => n.say(lines[i % lines.length], 2.2));
+      return;
+    }
+    if (t.type === 'aiimage') {
+      this.aiCard = { caption: this.aiImages.next(), t: 3.5 };
+      this.completeTask(t, pick(this.rng, ['HA! Brilliant.', 'Hahaha! Send me that.', 'Ha! That\'s going on the fridge.']));
       return;
     }
     if (t.type === 'boss') {
@@ -934,9 +1121,11 @@ export class Game {
       car: 'Unchecked car!', toilet: 'They made a mess!', rant: 'Missed the rant', fun: 'They got away with it',
       video: 'Missed the call!', boss: 'Boss is NOT happy', shower: 'Lee used all the hot water',
       invoice: 'Invoices not signed', darts: 'Dave is sulking', amber: 'Missed Amber', phone: 'Missed call',
+      walk: 'Emma went back to her desk', screen: 'Calls still piling up', aiimage: 'Missed the AI masterpiece',
     };
-    this.toast(`${msgs[t.type]} +${d.angerOnFail} anger`, this.andy, '#f88');
-    if (!this.andy.hidden) this.andy.say(this.grumbles.next(), 2, 'andy');
+    this.toast(d.angerOnFail ? `${msgs[t.type]} +${d.angerOnFail} anger` : msgs[t.type], this.andy, d.angerOnFail ? '#f88' : '#ccc');
+    if (!this.andy.hidden && d.angerOnFail) this.andy.say(this.grumbles.next(), 2, 'andy');
+    if (t.type === 'screen') this.screenCooldown = 10;
     if (t.type === 'toilet') this.toiletOutOfOrder = this.tuning.toiletOutOfOrderSeconds;
     if (t.type === 'car' && t.car) {
       t.car.checked = true;
@@ -952,6 +1141,8 @@ export class Game {
       if (!n) continue;
       if (t.type === 'invoice') n.say(scolded ? 'Thanks, Andy!' : "I'll come back later...", 2.2);
       else if (t.type === 'darts') n.say('Suit yourself...', 2.2);
+      else if (t.type === 'aiimage') n.say(scolded ? 'I made it with my big toe!' : 'Your loss.', 2.2);
+      else if (t.type === 'walk') n.say('Fine, I\'ll go on my own.', 2.2);
       else if (scolded && t.type !== 'rant') n.say(this.excuses.next(), 2);
       if (scolded && t.type === 'rant') n.say(pick(this.rng, ['Sorry Andy...', 'Yes Andy.', 'Won\'t happen again!']), 2.4);
       if (n.deskId && this.deskScreens[n.deskId]) delete this.deskScreens[n.deskId];

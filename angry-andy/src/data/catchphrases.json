@@ -34,5 +34,42 @@
     "My nephew says we should use the cloud.",
     "Budget's frozen. Do more with less.",
     "Can you fix my phone? It's personal."
-  ]
+  ],
+  "amber": [
+    "Ahh, lovely weather today.",
+    "Just checking the window seals.",
+    "Nice view from here.",
+    "This corner gets the best Wi-Fi, you know.",
+    "Testing the... blinds. Yes."
+  ],
+  "aiImages": [
+    "Andy as a Roman emperor, conquering the printer.",
+    "The whole IT team as the Spice Girls.",
+    "A cat in a hi-vis jacket fixing the server.",
+    "Andy's head on a bodybuilder. Oiled.",
+    "The boss as a Teletubby.",
+    "Password Pete as a medieval knight guarding 'Password123'.",
+    "Andy riding a dolphin through the car park.",
+    "Big Toe Dave as the Mona Lisa. Big toe included.",
+    "Lycra Lee as a Tour de France winner. On a unicycle.",
+    "The server room as a tropical beach.",
+    "Andy with hair. Lots of hair.",
+    "Printer Pam vs the printer: the movie poster."
+  ],
+  "walk": {
+    "good": [
+      "Saw a heron. Nice.",
+      "Fresh air. Lovely. Nobody rang.",
+      "Found a fiver on the pavement!",
+      "Emma brought biscuits. Good biscuits.",
+      "The sun came out. For once."
+    ],
+    "bad": [
+      "Emma talked about her ex for twenty minutes.",
+      "It started chucking it down.",
+      "Trod in something. Outside the bakery.",
+      "Bumped into the boss. He had 'a quick question'.",
+      "Emma wanted to talk about 'the cloud'."
+    ]
+  }
 }

@@ -394,6 +394,11 @@ function portrait(L, mood = 0, bg = '#3a4a6a') {
   // nose
   p.vline(16, 15, 18, shade(skin, -0.2)); p.set(15, 19, shade(skin, -0.25));
   if (L.beard) { p.ellipse(16, 22, 8, 4.5, hairC); p.rect(8, 15, 2, 7, hairC); p.rect(22, 15, 2, 7, hairC); }
+  if (L.headset) {
+    for (let k = 0; k < 18; k++) { const t = Math.PI + (k / 17) * Math.PI; p.set(16 + Math.cos(t) * 9.5, 13 + Math.sin(t) * 9.5, '#222'); }
+    p.rect(5, 12, 3, 6, '#333'); p.rect(24, 12, 3, 6, '#333');
+    p.hline(8, 13, 20, '#333'); p.rect(13, 19, 2, 2, '#555');
+  }
   // mouth by mood
   const mc = '#6a1a1a';
   if (mood === 0) p.hline(13, 18, 21, mc);
@@ -619,6 +624,14 @@ function dart() {
   d.set(1, 0, '#ddd'); d.vline(1, 1, 4, '#c8a030'); d.rect(0, 5, 3, 2, '#2060d0');
   return d;
 }
+function callscreen() {
+  // wall TV; the renderer writes "OPEN CALLS" and the live number on the screen area (x2..21, y2..11)
+  const s = new Img(24, 14);
+  s.rect(0, 0, 24, 14, '#1a1a1e'); s.rect(2, 2, 20, 10, '#0c1a2a'); s.hline(2, 21, 2, '#1c3048');
+  s.set(22, 12, '#40e060');
+  s.outline(OUTLINE);
+  return s;
+}
 function deskphone() {
   const p = new Img(10, 8);
   p.rect(1, 3, 8, 5, '#d8cfb0'); p.rect(2, 4, 6, 3, '#c4ba98');
@@ -652,7 +665,7 @@ function car(col) {
 
 // ---------------------------------------------------------------- UI icons (16x16)
 
-const ICONS = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'tea', 'bladder', 'check', 'cross', 'clock', 'warning', 'sound_on', 'sound_off', 'star', 'invoice', 'darts', 'window', 'phone', 'mobile'];
+const ICONS = ['car', 'toilet', 'rant', 'fun', 'video', 'boss', 'shower', 'tea', 'bladder', 'check', 'cross', 'clock', 'warning', 'sound_on', 'sound_off', 'star', 'invoice', 'darts', 'window', 'phone', 'mobile', 'walk', 'screen', 'ai'];
 function icon(name) {
   const i = new Img(16, 16);
   switch (name) {
@@ -676,6 +689,9 @@ function icon(name) {
     case 'window': i.rect(1, 2, 14, 12, '#7aa8d8'); i.frame(1, 2, 14, 12, '#e8e8e8'); i.vline(8, 2, 13, '#e8e8e8'); i.hline(1, 14, 8, '#e8e8e8'); i.rect(4, 4, 2, 2, '#f0d070'); i.rect(4, 6, 2, 2, '#f2a0b8'); break;
     case 'phone': i.rect(2, 3, 12, 3, '#222'); i.rect(2, 3, 3, 5, '#222'); i.rect(11, 3, 3, 5, '#222'); i.rect(4, 9, 8, 5, '#d8cfb0'); i.rect(6, 10, 4, 3, '#999'); i.set(1, 1, '#f44'); i.set(14, 1, '#f44'); break;
     case 'mobile': i.rect(4, 1, 8, 14, '#222'); i.rect(5, 2, 6, 10, '#6ac8f0'); i.rect(7, 13, 2, 1, '#888'); i.set(2, 5, '#f44'); i.set(1, 7, '#f44'); i.set(13, 5, '#f44'); i.set(14, 7, '#f44'); break;
+    case 'walk': i.rect(3, 8, 9, 4, '#8a5a32'); i.rect(9, 6, 4, 6, '#8a5a32'); i.rect(2, 12, 12, 2, '#3a2a1a'); i.hline(4, 8, 9, '#c8a070'); i.set(1, 4, '#9cd'); i.set(3, 3, '#9cd'); break;
+    case 'screen': i.rect(1, 2, 14, 10, '#222'); i.rect(2, 3, 12, 8, '#2a4a6a'); i.hline(3, 9, 5, '#9cf'); i.hline(3, 7, 8, '#9cf'); i.rect(7, 12, 2, 2, '#555'); i.ellipse(13, 3, 2.6, 2.6, '#e03030'); break;
+    case 'ai': i.rect(2, 4, 12, 8, '#333'); i.rect(3, 5, 10, 6, '#7a5ac8'); i.rect(1, 12, 14, 2, '#888'); i.set(8, 6, '#fff'); i.set(7, 7, '#fff'); i.set(9, 7, '#fff'); i.set(8, 8, '#fff'); i.set(12, 2, '#f0d040'); i.set(13, 1, '#f0d040'); break;
     case 'star': for (let k = 0; k < 6; k++) i.hline(8 - k, 7 + k, 7, '#f0d040'); i.rect(6, 2, 4, 12, '#f0d040'); i.rect(2, 6, 12, 3, '#f0d040'); break;
   }
   i.outline(OUTLINE);
@@ -719,7 +735,7 @@ const manifest = {
 };
 
 for (const ch of characters) {
-  if (ch.office === 'upstairs') continue; // the boss is only ever a portrait
+  if (ch.office === 'upstairs' || ch.office === 'phone') continue; // the boss and cold callers are only ever portraits
   personSheet(ch.look).save(`sprites/${ch.id}.png`);
   manifest.characters[ch.id] = { file: `sprites/${ch.id}.png` };
 }
@@ -760,6 +776,7 @@ const objs = packRow([
   { name: 'plant', img: plant(), oy: -8 }, { name: 'filing', img: filing(), oy: -8 },
   { name: 'beanbag', img: beanbag() }, { name: 'bin', img: bin() }, { name: 'whiteboard', img: whiteboard(), oy: -8 },
   { name: 'deskphone', img: deskphone() },
+  { name: 'callscreen', img: callscreen(), oy: 1 },
   { name: 'dartboard', img: dartboard(), oy: 2 }, { name: 'dart', img: dart() },
   { name: 'mess', img: mess(), oy: 4 }, { name: 'out_of_order', img: sign() }, { name: 'stairs_up', img: stairsArrow() },
 ]);

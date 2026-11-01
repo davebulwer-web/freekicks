@@ -36,5 +36,10 @@
   },
   "videoCallsPerDay": 2,
   "videoCallWarningSeconds": 35,
-  "dayEndBonus": 500
+  "dayEndBonus": 500,
+  "_openCalls": "The open-calls screen in the IT Office. New calls arrive at openCallsPerMinute; each IT staff member sat at their desk closes teamClosesPerMinute. At screenRantAt Andy has to rant at the screen.",
+  "openCallsStart": 2,
+  "openCallsPerMinute": 4.5,
+  "teamClosesPerMinute": 1.0,
+  "screenRantAt": 8
 }

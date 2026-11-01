@@ -161,6 +161,10 @@ export class Renderer {
     for (const o of g.map.data.objects) {
       if (o.type === 'stairs_up') continue;
       if (o.type === 'shower') { items.push({ y: o.y * ts, draw: () => obj('shower', (o.x - 0.5) * ts, (o.y - 0.4) * ts) }); continue; }
+      if (o.type === 'callscreen') {
+        items.push({ y: (o.y + 1) * ts, draw: () => { obj(o.type, o.x * ts, o.y * ts); this.drawCallScreen(g, o.x * ts, o.y * ts + 1); } });
+        continue;
+      }
       items.push({ y: (o.y + 1) * ts, draw: () => obj(o.type, o.x * ts, o.y * ts) });
     }
     for (const d of g.map.data.desks) {
@@ -505,6 +509,8 @@ export class Renderer {
     if (g.modal?.kind === 'boss') this.drawBossModal(g);
     if (g.modal?.kind === 'darts') this.drawDartsBoard(g);
     if (g.modal?.kind === 'phone') this.drawPhoneModal(g);
+    if (g.modal?.kind === 'walk') this.drawWalkModal(g);
+    if (g.aiCard && g.screen === 'playing') this.drawAiCard(g);
     if (g.screen === 'title') this.drawTitle(g);
     if (g.screen === 'paused') this.drawCentre(['PAUSED', '', 'Press P or tap to carry on']);
     if (g.screen === 'dayEnd') this.drawDayEnd(g);
@@ -593,28 +599,109 @@ export class Renderer {
     ctx.textBaseline = 'top';
     ctx.font = `12px ${TITLE_FONT}`;
     ctx.fillStyle = C.warn;
-    ctx.fillText('INCOMING CALL', 360, 122);
-    this.icon(m.task.variant === 'mobile' ? 'mobile' : 'phone', 250, 120);
-    this.portrait(m.caller.id, 190, 150, 48);
+    const cold = m.caller.cold;
+    ctx.fillText(cold ? 'UNKNOWN NUMBER' : 'INCOMING CALL', 360, 122);
+    this.icon(m.task.variant === 'mobile' ? 'mobile' : 'phone', cold ? 238 : 250, 120);
+    this.portrait(m.caller.portrait, 190, 150, 48);
     ctx.textAlign = 'left';
     ctx.font = `16px ${FONT}`;
     ctx.fillStyle = C.text;
     ctx.fillText(m.caller.name, 250, 154);
     ctx.font = `12px ${FONT}`;
-    ctx.fillStyle = C.dim;
-    ctx.fillText(m.task.variant === 'mobile' ? 'on your mobile' : 'on the desk phone', 250, 172);
+    ctx.fillStyle = cold ? C.bad : C.dim;
+    ctx.fillText(cold ? 'Sales call!' : m.task.variant === 'mobile' ? 'on your mobile' : 'on the desk phone', 250, 172);
     ctx.fillStyle = '#f2efe6';
     ctx.fillRect(190, 210, 340, 78);
     ctx.fillStyle = '#1a1420';
     ctx.font = `17px ${FONT}`;
     wrap(ctx, `"${m.request}"`, 320).slice(0, 4).forEach((l, i) => ctx.fillText(l, 200, 218 + i * 17));
     const b = modalButtons();
-    this.button(b.allow, 'BRUSH OFF [A]', '#2a8a3a');
-    this.button(b.deny, 'LOG TICKET [D]', '#2a5ab0');
+    this.button(b.allow, cold ? 'HANG UP [A]' : 'BRUSH OFF [A]', '#2a8a3a');
+    this.button(b.deny, cold ? 'HEAR OUT [D]' : 'LOG TICKET [D]', '#2a5ab0');
     ctx.textAlign = 'center';
     ctx.font = `11px ${FONT}`;
     ctx.fillStyle = C.dim;
-    ctx.fillText(`Brush-offs today: ${g.brushOffsToday} of ${d.brushOffsBeforeBoss ?? 3} before the boss hears about it`, 360, 298);
+    ctx.fillText(
+      cold ? 'Hanging up is very satisfying. Hearing them out is not.' : `Brush-offs today: ${g.brushOffsToday} of ${d.brushOffsBeforeBoss ?? 3} before the boss hears about it`,
+      360,
+      298,
+    );
+  }
+
+  private drawWalkModal(g: Game) {
+    const ctx = this.ctx;
+    const m = g.modal as Extract<typeof g.modal, { kind: 'walk' }>;
+    const d = g.defs.walk;
+    ctx.fillStyle = 'rgba(10,8,16,0.5)';
+    ctx.fillRect(0, HUD_H, WORLD_W, VIEW_H - HUD_H);
+    this.box(150, 140, 340, 130);
+    this.portrait('emma', 166, 158, 56);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.font = `10px ${TITLE_FONT}`;
+    ctx.fillStyle = C.warn;
+    ctx.fillText('OUT FOR A WALK', 236, 156);
+    this.icon('walk', 446, 152);
+    const reveal = m.t < m.total * 0.45;
+    ctx.font = `14px ${FONT}`;
+    ctx.fillStyle = C.text;
+    if (!reveal) {
+      const dots = '.'.repeat(1 + (Math.floor(this.t * 3) % 3));
+      ctx.fillText(`Round the block with Emma${dots}`, 236, 178);
+    } else {
+      wrap(ctx, m.line, 236).slice(0, 3).forEach((l, i) => ctx.fillText(l, 236, 176 + i * 15));
+      ctx.font = `12px ${FONT}`;
+      ctx.fillStyle = m.good ? C.good : C.bad;
+      ctx.fillText(m.good ? `Calming! -${d.calmOnGood ?? 12} anger` : `Annoying! +${d.angerOnBad ?? 8} anger`, 236, 226);
+    }
+    ctx.fillStyle = C.dim;
+    ctx.font = `11px ${FONT}`;
+    ctx.fillText(`Back in ${Math.ceil(m.t)}s... (tasks keep ticking!)`, 166, 250);
+  }
+
+  /** Big Toe Dave's AI picture: a framed card with a doodle and the caption. */
+  private drawAiCard(g: Game) {
+    const ctx = this.ctx;
+    const c = g.aiCard!;
+    const x = 170, y = HUD_H + 34, w = 300, h = 92;
+    ctx.globalAlpha = Math.min(1, c.t * 3);
+    this.box(x, y, w, h);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.font = `8px ${TITLE_FONT}`;
+    ctx.fillStyle = '#c8a0ff';
+    ctx.fillText("BIG TOE DAVE'S AI MASTERPIECE", x + 10, y + 8);
+    // a little "generated" picture: purple gradient frame with sparkles
+    const px = x + 10, py = y + 22;
+    const grad = ctx.createLinearGradient(px, py, px + 60, py + 60);
+    grad.addColorStop(0, '#7a5ac8');
+    grad.addColorStop(1, '#e07ab0');
+    ctx.fillStyle = grad;
+    ctx.fillRect(px, py, 60, 60);
+    this.portrait('andy_neutral', px + 14, py + 14, 32);
+    ctx.fillStyle = '#fff';
+    for (const [sx, sy] of [[px + 6, py + 6], [px + 52, py + 10], [px + 8, py + 50], [px + 50, py + 52]]) ctx.fillRect(sx, sy, 2, 2);
+    ctx.font = `14px ${FONT}`;
+    ctx.fillStyle = C.text;
+    wrap(ctx, `"${c.caption}"`, w - 90).slice(0, 4).forEach((l, i) => ctx.fillText(l, x + 80, y + 26 + i * 15));
+    ctx.globalAlpha = 1;
+  }
+
+  /** The open-calls number on the IT Office wall screen. */
+  private drawCallScreen(g: Game, sx: number, sy: number) {
+    const ctx = this.ctx;
+    const n = Math.floor(g.openCalls);
+    const limit = g.tuning.screenRantAt;
+    const col = n >= limit ? C.bad : n >= limit * 0.6 ? C.warn : C.good;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.font = `5px ${TITLE_FONT}`;
+    ctx.fillStyle = '#9cc8f0';
+    ctx.fillText('CALLS', sx + 12, sy + 3);
+    if (n >= limit && Math.floor(this.t * 3) % 2) return;
+    ctx.font = `10px ${FONT}`;
+    ctx.fillStyle = col;
+    ctx.fillText(String(n), sx + 12, sy + 6);
   }
 
   private button(r: { x: number; y: number; w: number; h: number }, label: string, col: string) {
@@ -748,9 +835,9 @@ export class Renderer {
     const lines = [
       'Andy is the IT Manager. He is permanently annoyed.',
       'Deal with each task before its timer runs out or his ANGER rises.',
-      'Answer the phone, check cars, chase people out of the loo, rant at people,',
-      'stop the IT lads having fun, sign invoices, take video calls, beat',
-      'Big Toe Dave at darts and go upstairs when the boss calls.',
+      'Answer the phone, check cars, chase Simon out of the loo, rant at people,',
+      'stop the IT lads having fun, keep the open-calls screen down, sign',
+      "Debbie's invoices, go for walks with Emma, beat Big Toe Dave at darts.",
       'Keep BLADDER (loo) and THIRST (tea in the kitchen) under control.',
       'Survive until 5 o\'clock. If anger hits 100%... MELTDOWN.',
     ];

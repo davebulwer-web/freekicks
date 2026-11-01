@@ -71,6 +71,33 @@ const PORT = 5199;
     const dartsOk = await page.evaluate(() => window.__andy.game.modal?.kind === 'darts');
     if (!dartsOk) errors.push('darts game did not start');
     await page.waitForTimeout(3500);
+    // a cold call, the open-calls screen, Dave's AI picture and Emma's walk
+    await page.evaluate(() => { const g = window.__andy.game; g.tasks = g.tasks.filter((t) => t.type !== 'phone'); g.defs.phone.coldCallChance = 1; g.defs.phone.mobileChance = 1; g.spawn('phone'); g.defs.phone.coldCallChance = 0.3; g.defs.phone.mobileChance = 0.5; g.openCalls = 9; });
+    await page.keyboard.down('e');
+    await page.waitForTimeout(700);
+    await page.keyboard.up('e');
+    await page.screenshot({ path: path.join(OUT, '5c-coldcall.png') });
+    if (!(await page.evaluate(() => window.__andy.game.modal?.caller?.cold))) errors.push('cold call did not open');
+    await page.keyboard.press('a');
+    await page.evaluate(() => { const g = window.__andy.game; const d = g.npc('dave'); d.busy = false; d.activity = null; g.tasks = g.tasks.filter((t) => t.npc !== d && t.npc2 !== d); g.spawn('aiimage'); g.spawn('walk'); });
+    await page.waitForTimeout(9000);
+    await page.evaluate(() => { const g = window.__andy.game; const d = g.npc('dave'); g.andy.x = d.x - 8; g.andy.y = d.y; });
+    await page.keyboard.down('e');
+    await page.waitForTimeout(900);
+    await page.keyboard.up('e');
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: path.join(OUT, '5d-ai-and-screen.png') });
+    if (!(await page.evaluate(() => !!window.__andy.game.aiCard))) errors.push('AI picture did not show');
+    await page.waitForTimeout(4000);
+    await page.evaluate(() => { const g = window.__andy.game; const e = g.npc('emma'); g.andy.x = e.x - 8; g.andy.y = e.y; });
+    await page.keyboard.down('e');
+    await page.waitForTimeout(1200);
+    await page.keyboard.up('e');
+    await page.waitForTimeout(5500);
+    await page.screenshot({ path: path.join(OUT, '5e-walk.png') });
+    if (!(await page.evaluate(() => window.__andy.game.modal?.kind === 'walk'))) errors.push('walk did not start');
+    await page.waitForFunction(() => !window.__andy.game.modal, null, { timeout: 8000 });
+
     // answer a mobile call
     await page.evaluate(() => { const g = window.__andy.game; g.tasks = g.tasks.filter((t) => t.type !== 'phone'); g.defs.phone.mobileChance = 1; g.spawn('phone'); g.defs.phone.mobileChance = 0.5; const p = g.map.point('frontDoor'); g.andy.x = p.x; g.andy.y = p.y; });
     await page.waitForTimeout(400);

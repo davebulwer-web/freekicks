@@ -19,7 +19,7 @@ One sheet per person: **16x24 px frames, 3 columns x 6 rows (48x144 px)**. The f
 | 4 | Work: sat at a desk, seen from behind, typing | 3 frames |
 | 5 | Shout / rant / laugh (facing camera) | point, mouth open, arm raised |
 
-Ids: `andy`, `pam`, `sue`, `brenda`, `irene`, `elaine` (Finance); `roger`, `mandy`, `pete`, `gary`, `clive` (Middle Office); `dave` (Big Toe Dave), `pj` (PJ), `pavan` (Pavan) (IT); `lee` (the cyclist); `amber` (from next door).
+Ids: `andy`, `pam`, `sue`, `brenda`, `debbie`, `elaine` (Finance); `roger`, `emma`, `pete`, `simon`, `clive` (Middle Office); `dave` (Big Toe Dave), `pj` (PJ), `pavan` (Pavan) (IT); `lee` (the cyclist); `amber` (from next door).
 
 Andy also has `andy_angry.png` (used at 50%+ anger) and `andy_furious.png` (80%+), in the same layout.
 
@@ -28,7 +28,7 @@ Andy also has `andy_angry.png` (used at 50%+ anger) and `andy_furious.png` (80%+
 **32x32 px** head-and-shoulders, shown in the HUD and on task cards. Any square size works; it is scaled.
 
 - `andy_neutral`, `andy_annoyed`, `andy_irritated`, `andy_angry`, `andy_furious`, `andy_shouting`: the anger meter faces, lowest to highest.
-- One per character id above, plus `boss`.
+- One per character id above, plus `boss` and `coldcaller` (the face on sales calls).
 
 ## Tiles: `tiles/tiles.png`
 
@@ -38,7 +38,7 @@ A single row of **16x16 px** tiles, in this order: `wall_top`, `wall_front`, `do
 
 Furniture packed in one row. Each frame's position and size, and its draw offset `ox`/`oy` from its tile's top-left, are in `manifest.json` under `objects.frames`. If you change sizes, edit those numbers.
 
-`desk` (32x24, 2 tiles wide, monitor screen at x10-21, y1-8), the monitor screens `screen_off`, `screen_work`, `screen_game`, `screen_football` and `screen_call` (12x8 each, drawn over the desk monitor), `rack`, `counter`, `kettle`, `fridge`, `toilet`, `sink`, `shower` (32x32), `printer`, `cooler`, `plant`, `filing`, `beanbag`, `bin`, `whiteboard`, `dartboard` (16x16, hung on the IT Office's top wall), `dart` (3x7, used for the throws), `deskphone` (10x8, sits on Andy's desk and shakes when it rings), `mess`, `out_of_order`, `stairs_up`.
+`desk` (32x24, 2 tiles wide, monitor screen at x10-21, y1-8), the monitor screens `screen_off`, `screen_work`, `screen_game`, `screen_football` and `screen_call` (12x8 each, drawn over the desk monitor), `rack`, `counter`, `kettle`, `fridge`, `toilet`, `sink`, `shower` (32x32), `printer`, `cooler`, `plant`, `filing`, `beanbag`, `bin`, `whiteboard`, `dartboard` (16x16, hung on the IT Office's top wall), `dart` (3x7, used for the throws), `deskphone` (10x8, sits on Andy's desk and shakes when it rings), `callscreen` (24x14 wall TV in the IT Office; the game writes CALLS and the number on it), `mess`, `out_of_order`, `stairs_up`.
 
 ## Cars: `sprites/cars.png`
 
@@ -46,7 +46,7 @@ Furniture packed in one row. Each frame's position and size, and its draw offset
 
 ## UI icons: `ui/icons.png`
 
-A single row of **16x16 px** icons: `car`, `toilet`, `rant`, `fun`, `video`, `boss`, `shower`, `tea`, `bladder`, `check`, `cross`, `clock`, `warning`, `sound_on`, `sound_off`, `star`, `invoice`, `darts`, `window`, `phone`, `mobile`.
+A single row of **16x16 px** icons: `car`, `toilet`, `rant`, `fun`, `video`, `boss`, `shower`, `tea`, `bladder`, `check`, `cross`, `clock`, `warning`, `sound_on`, `sound_off`, `star`, `invoice`, `darts`, `window`, `phone`, `mobile`, `walk`, `screen`, `ai`.
 
 ## Fonts and sound
 

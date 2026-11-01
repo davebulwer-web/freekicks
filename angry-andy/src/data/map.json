@@ -362,6 +362,12 @@
    "x": 38,
    "y": 6,
    "solid": false
+  },
+  {
+   "type": "callscreen",
+   "x": 35,
+   "y": 6,
+   "solid": false
   }
  ],
  "bays": [
@@ -494,6 +500,22 @@
   "outsideRight": [
    39.5,
    16.5
+  ],
+  "itScreen": [
+   36.0,
+   7.6
+  ],
+  "walkOut": [
+   23.5,
+   17.5
+  ],
+  "itEmma": [
+   35.5,
+   13.4
+  ],
+  "itDaveShow": [
+   37.0,
+   10.4
   ]
  },
  "andyStart": "andy"
